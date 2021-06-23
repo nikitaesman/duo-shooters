@@ -515,7 +515,7 @@ function respawnPlayer(index,time) {
 
 
 const WebSocket = require('ws')
-const socketServer = new WebSocket.Server({port:8080},()=>{
+const socketServer = new WebSocket.Server({port:80},()=>{
 	console.log(chalk.bgGreen("WebSocket server has been started on 8080..."))
 })
 
