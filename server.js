@@ -82,12 +82,6 @@ var canv = {
 };
 
 
-setInterval(function(){
-	roundTime+=10
-	serverMoves()
-
-},10)
-
 //физические константы
 var moveSpeed = 5;
 var grav = 5;
@@ -362,13 +356,6 @@ plats[31] = {
 
 
 
-
-
-
-
-
-
-
 //создание лежащего оружия
 // guns[0] = {
 // 	x: 100,
@@ -387,6 +374,24 @@ guns[1] = {
 	name: "m4a4",
 	takes: 2
 }
+
+
+
+
+if (roundTime != undefined) {
+	setInterval(function(){
+		roundTime+=10
+		serverMoves()
+
+	},10)
+}else {
+	gameData()
+}
+
+
+
+
+
 
 //функция обработки движения различных объектов на сервере
 function serverMoves() {
@@ -515,7 +520,7 @@ function respawnPlayer(index,time) {
 
 
 const WebSocket = require('ws')
-const socketServer = new WebSocket.Server({port:80},()=>{
+const socketServer = new WebSocket.Server({ server }, ()=>{
 	console.log(chalk.bgGreen("WebSocket server has been started on 8080..."))
 })
 
