@@ -1,3 +1,5 @@
+//game duo shooters production Flecs1th
+
 var canv = document.querySelector("#canvas");
 canv.width = 2100;
 canv.height = 1100;
@@ -70,14 +72,9 @@ anim_boost5.src = "img/models/boost/5.png";
 
 
 var sounds;
-
-
-
-
-
-
-
 var gameEngineOperation;
+var ping = null;
+
 
 //Позиция игрока
 var xPos = 800;
@@ -143,6 +140,26 @@ var tempPlats = [];
 var guns = [];
 var shots = [];
 var enemys = [];
+
+
+function pingChecker() {  
+    var request = new XMLHttpRequest();
+	var requestPing = new Date;
+	var postAddress = location.origin+"/pingChecker"
+
+	request.open('POST',postAddress);
+	request.setRequestHeader('Content-Type','application/x-www-form-urlencoded');
+	request.send();
+
+	request.onreadystatechange = function() {
+		if(request.status == 200 && request.readyState == 4) {
+	         requestPing = new Date - requestPing;
+	         ping = requestPing;
+	    }
+	}
+}
+
+setInterval(pingChecker,1000);
 
 
 window.onkeydown = function(e) {
@@ -248,11 +265,7 @@ function camCenter() {
 
 
 
-
-
-function draw() {
-	ctx.clearRect(0, 0, canv.width, canv.height);
-	ctx2.clearRect(0, 0, tab.width, tab.height);
+function gameСycle() {
 	if (onStay == 1) {
 		grav = 9.8;
 	}
@@ -362,7 +375,7 @@ function draw() {
 					if (onPlatformCorrect == 0) {
 						onPlatformCorrect = 1;
 						yPos = plats[i].y-pep.height-moveSpeed-1;
-						sendSound("fall");
+						//sendSound("fall");
 					}
 					//проверка на буст
 					if(plats[i].toBoost == 1) {
@@ -459,23 +472,72 @@ function draw() {
 			barrierRight = 1;
 		}else {
 			barrierRight = 0;
+		}	
+	}//главный перебор платформ----------------------------
+
+	//перебор массива с оружиями
+	for (var k in guns) {
+		if (guns[k] == null) {
+			continue;
 		}
-		
+		mayTake = 0
+		if (guns[k].takes != 1) {
+			var gx = 1;
+			while (gx != guns[k].width) {
+				gx++;
+				if (
+						(
+							(guns[k].x+gx > xPos)&&(guns[k].x+gx < xPos+pep.width)
+						)
+						&&
+						(
+							(guns[k].y < yPos+pep.height && guns[k].y > yPos)
+						)
+						&& takeWeapon != guns[k].name 
+					) 
+				{
+					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
+					if (take == 1) {
+						sendTake(takeWeapon,k);
+						break;
+					}
+				}
+			}
+		}
+	}
+
+	if (gameEngineOperation == 1) {
+		sendInfo();
+		setTimeout(gameСycle,10)
+	}
+}//  закрытие gameСycle
 
 
-		//отрисовка платформ
+
+
+
+
+
+
+
+
+function draw() {
+	ctx.clearRect(0, 0, canv.width, canv.height);
+	ctx2.clearRect(0, 0, tab.width, tab.height);
+	
+
+	//отрисовка платформ
+	for (var i in plats) {
+		if (plats[i] === null) {
+			continue;
+		}
+
+		//отрисовка номеров платформ
+		ctx.fillStyle = "#000";
+		ctx.font = "10px Verdana";
+		ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
+
 		
-		// if(plats[i].human == 1) {
-		// 	for (var e in enemys) {
-		// 		if (enemys[e].dead == 1) {
-		// 			delete plats[i];
-		// 			break;
-		// 		}
-		// 		ctx.fillStyle = "rgba(0,0,0,0)";
-		// 	}
-		// }else {
-		// 	ctx.fillStyle = "#416D71";
-		// }
 		if(plats[i].toDie == 1) {
 			ctx.fillStyle = "#E76224";
 		}
@@ -487,7 +549,7 @@ function draw() {
 		}else {
 			ctx.fillStyle = "#416D71";	
 		}
-		//дефолтная отрисовка платформ
+		//дефолтный стиль отрисовка платформ
 		//ctx.fillRect(plats[i].x,plats[i].y,plats[i].width,plats[i].height);
 		//отрисовка текстур платформ
 		switch (plats[i].model) {
@@ -571,18 +633,6 @@ function draw() {
 
 				break;
 		}
-		
-	}//главный перебор платформ----------------------------
-
-
-	for (var i in plats) {
-		if (plats[i] === null) {
-			continue;
-		}
-
-		ctx.fillStyle = "#000";
-		ctx.font = "10px Verdana";
-		ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
 	}
 	//отрисовка пуль
 	for (var s in shots) { 
@@ -690,7 +740,7 @@ function draw() {
 			}	
 		}
 	}
-	//перебор массива с оружиями
+	//отрисовка массива с оружиями
 	for (var k in guns) {
 		if (guns[k] == null) {
 			continue;
@@ -704,27 +754,6 @@ function draw() {
 				case "m4a4":
 					ctx.drawImage(m4a4,guns[k].x,guns[k].y);
 					break;
-			}
-			var gx = 1;
-			while (gx != guns[k].width) {
-				gx++;
-				if (
-						(
-							(guns[k].x+gx > xPos)&&(guns[k].x+gx < xPos+pep.width)
-						)
-						&&
-						(
-							(guns[k].y < yPos+pep.height && guns[k].y > yPos)
-						)
-						&& takeWeapon != guns[k].name 
-					) 
-				{
-					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
-					if (take == 1) {
-						sendTake(takeWeapon,k);
-						break;
-					}
-				}
 			}
 		}
 	}
@@ -783,9 +812,16 @@ function draw() {
 	for(var t in stats) {
 		var numT = Number(t)+1;
 		var roundTimeStamp = new Date(roundTime)
-		ctx2.fillText("#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads,200,200+(t*20))
+		ctx2.fillText("#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads,200,200+(t*20));
 		ctx2.fillText("Время раунда: "+roundTimeStamp.getMinutes()+":"+roundTimeStamp.getSeconds(),400,40);
 	}
+
+	if (ping != null) {
+		ctx2.fillStyle = "#fff";
+		ctx2.font = "20px PressStart2P";
+		ctx2.fillText("Ping: "+ping,50,50);
+	}
+
 	//отображение пользовательского интерфейса
 		//время раунда
 		// ctx.fillStyle = "rgba(107,131,136,0.5)";
@@ -794,11 +830,10 @@ function draw() {
 		// ctx.fillStyle = "#000";
 		// ctx.fillText(Math.floor(roundTime/1000),xPos-20,yPos-180);
 	if (gameEngineOperation == 1) {
-		sendInfo();
-		setTimeout(draw,10);
+		requestAnimationFrame(draw);
+		//setTimeout(draw,10);
 	}
-
-}
+}// закртие draw
 
 
 
@@ -851,6 +886,7 @@ ws.onmessage = response => {
 		roundTime = res.roundTime;
 		takeWeapon = res.takeWeapon;
 		console.log("UserID: "+userID);
+		gameСycle();
 		draw();
 	}
 

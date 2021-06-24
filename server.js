@@ -31,7 +31,9 @@ const server = http.createServer( (req, res) => {
 		})
 	}
 	if (req.method == "POST") {
-
+		if (req.url == "/pingChecker") {
+			res.end()
+		}
 	}
 
 	
@@ -46,333 +48,336 @@ server.listen(PORT, ()=>{
 	console.log(chalk.bgGreen('Server has been started on '+PORT+'...'))
 })
 
-
-var spawns = []
-spawns[1] = {
-	x: 1300,
-	y: 980
-}
-spawns[2] = {
-	x: 1800,
-	y: 980
-}
-spawns[3] = {
-	x: 1800,
-	y: 750
-}
-spawns[4] = {
-	x: 1300,
-	y: 750
-}
-spawns[5] = {
-	x: 1500,
-	y: 850
-}
-var playersCount = 0
-var players = []
-var guns = []
-var plats = []
-var shots = []
-var sounds = []
-var stats = []
-var roundTime = 0
-var canv = {
-	width: 2100,
-	height:  1100
-};
-
-
-//физические константы
-var moveSpeed = 5;
-var grav = 5;
-var shotSpeed = 8;
-
-
-//создание платформ
-plats[0] = {
-	x: 1000,
-	y: 1080,
-	width: 100,
-	height: 20,
-	model: "boost",
-	updated: 1,
-	frame: 1,
-	toBoost: 1
-}
-plats[1] = {
-	x: 0,
-	y: 980,
-	width: 400,
-	height: 20,
-	model: "plats"
-}
-plats[2] = {
-	x: 500,
-	y: 980,
-	width: 200,
-	height: 20,
-	model: "plats"
-}
-plats[3] = {
-	x: 1250,
-	y: 1100-20,
-	width: 100,
-	height: 20,
-	model: "plats"
-}
-plats[4] = {
-	x: 1750,
-	y: 1100-20,
-	width: 100,
-	height: 20,
-	model: "plats"
-}
-plats[5] = {
-	x: 0,
-	y: 740,
-	width: 100,
-	height: 20,
-	model: "boost",
-	updated: 1,
-	frame: 1,
-	toBoost: 1
-}
-plats[6] = {
-	x: 300,
-	y: 740,
-	width: 600,
-	height: 20,
-	model: "plats"
-}
-plats[7] = {
-	x: 0,
-	y: 820,
-	width: 200,
-	height: 160,
-	model: "box2"
-}
-plats[8] = {
-	x: 200,
-	y: 900,
-	width: 100,
-	height: 80,
-	model: "box1"
-}
-plats[9] = {
-	x: 600,
-	y: 420,
-	width: 20,
-	height: 100,
-	model: "plats"
-}
-plats[10] = {
-	x: 1200,
-	y: 660,
-	width: 820,
-	height: 20,
-	model: "plats"
-}
-plats[11] = {
-	x: 100,
-	y: 420,
-	width: 200,
-	height: 20,
-	model: "plats"
-}
-plats[12] = {
-	x: 300,
-	y: 420,
-	width: 1050,
-	height: 20,
-	model: "plats"
-}
-plats[13] = {
-	x: 1800,
-	y: 420,
-	width: 400,
-	height: 20,
-	model: "plats"
-}
-plats[14] = {
-	x: 1500,
-	y: 470,
-	width: 170,
-	height: 190,
-	model: "box2"
-}
-plats[15] = {
-	x: 1400,
-	y: 580,
-	width: 80,
-	height: 80,
-	model: "box1"
-}
-plats[16] = {
-	x: 2000,
-	y: 1080,
-	width: 100,
-	height: 20,
-	model: "boost",
-	updated: 1,
-	frame: 1,
-	toBoost: 1
-
-}
-plats[17] = {
-	x: 1680,
-	y: 580,
-	width: 80,
-	height: 80,
-	model: "box4"
-}
-plats[18] = {
-	x: 600,
-	y: 640,
-	width: 20,
-	height: 100,
-	model: "plats"
-}
-plats[19] = {
-	x: 300,
-	y: 320,
-	width: 20,
-	height: 100,
-	model: "plats"
-}
-plats[20] = {
-	x: 1150,
-	y: 320,
-	width: 20,
-	height: 100,
-	model: "plats"
-}
-plats[21] = {
-	x: 320,
-	y: 340,
-	width: 830,
-	height: 80,
-	model: "acid",
-	toDie: 1
-}
-plats[22] = {
-	x: 400,
-	y: 300,
-	width: 50,
-	height: 20,
-	model: "plats",
-	updated: 1,
-	unStatic: 1,
-	moveObj: {
-		move: 1,
-		speed: 1,
-		goFromX: 400,
-		goToX: 1000 
+//gameData --------------------------------------------
+{
+	var spawns = []
+	spawns[1] = {
+		x: 1300,
+		y: 980
 	}
-}
-plats[23] = {
-	x: 1250,
-	y: 850,
-	width: 100,
-	height: 20,
-	model: "plats"
-}
-plats[24] = {
-	x: 1750,
-	y: 850,
-	width: 100,
-	height: 20,
-	model: "plats"
-}
-plats[25] = {
-	x: 1500,
-	y: 950,
-	width: 100,
-	height: 20,
-	model: "plats"
-}
-plats[26] = {
-	x: 25,
-	y: 1000,
-	width: 10,
-	height: 100,
-	toPort: 1,
-	portObj: {
-		portToX: 2000,
-		portToY: 319
-	},
-	model: "portal",
-	frameTime: 1
-}
-plats[27] = {
-	x: 2065,
-	y: 320,
-	width: 10,
-	height: 100,
-	toPort: 1,
-	portObj: {
-		portToX: 40,
-		portToY: 1000
-	},
-	model: "portal",
-	frameTime: 1
-}
-plats[28] = {
-	x: 550,
-	y: 690,
-	width: 50,
-	height: 50,
-	model: "box3"
-}
-plats[29] = {
-	x: 620,
-	y: 700,
-	width: 40,
-	height: 40,
-	model: "box4"
-}
-plats[30] = {
-	x: 0,
-	y: 760,
-	width: 100,
-	height: 60,
-	model: "box4"
-}
-plats[31] = {
-	x: 300,
-	y: 1000,
-	width: 100,
-	height: 100,
-	updated: 1,
-	model: "box2",
-	unStatic: 1,
-	moveObj: {
-		move: 1,
-		speed: 0.5,
-		goFromX: 300,
-		goToX: 500 
+	spawns[2] = {
+		x: 1800,
+		y: 980
 	}
-}
+	spawns[3] = {
+		x: 1800,
+		y: 750
+	}
+	spawns[4] = {
+		x: 1300,
+		y: 750
+	}
+	spawns[5] = {
+		x: 1500,
+		y: 850
+	}
+	var playersCount = 0
+	var players = []
+	var guns = []
+	var plats = []
+	var shots = []
+	var sounds = []
+	var stats = []
+	var roundTime = 0
+	var canv = {
+		width: 2100,
+		height:  1100
+	};
+
+
+	//физические константы
+	var moveSpeed = 5;
+	var grav = 5;
+	var shotSpeed = 8;
+
+
+	//создание платформ
+	plats[0] = {
+		x: 1000,
+		y: 1080,
+		width: 100,
+		height: 20,
+		model: "boost",
+		updated: 1,
+		frame: 1,
+		toBoost: 1
+	}
+	plats[1] = {
+		x: 0,
+		y: 980,
+		width: 400,
+		height: 20,
+		model: "plats"
+	}
+	plats[2] = {
+		x: 500,
+		y: 980,
+		width: 200,
+		height: 20,
+		model: "plats"
+	}
+	plats[3] = {
+		x: 1250,
+		y: 1100-20,
+		width: 100,
+		height: 20,
+		model: "plats"
+	}
+	plats[4] = {
+		x: 1750,
+		y: 1100-20,
+		width: 100,
+		height: 20,
+		model: "plats"
+	}
+	plats[5] = {
+		x: 0,
+		y: 740,
+		width: 100,
+		height: 20,
+		model: "boost",
+		updated: 1,
+		frame: 1,
+		toBoost: 1
+	}
+	plats[6] = {
+		x: 300,
+		y: 740,
+		width: 600,
+		height: 20,
+		model: "plats"
+	}
+	plats[7] = {
+		x: 0,
+		y: 820,
+		width: 200,
+		height: 160,
+		model: "box2"
+	}
+	plats[8] = {
+		x: 200,
+		y: 900,
+		width: 100,
+		height: 80,
+		model: "box1"
+	}
+	plats[9] = {
+		x: 600,
+		y: 420,
+		width: 20,
+		height: 100,
+		model: "plats"
+	}
+	plats[10] = {
+		x: 1200,
+		y: 660,
+		width: 820,
+		height: 20,
+		model: "plats"
+	}
+	plats[11] = {
+		x: 100,
+		y: 420,
+		width: 200,
+		height: 20,
+		model: "plats"
+	}
+	plats[12] = {
+		x: 300,
+		y: 420,
+		width: 1050,
+		height: 20,
+		model: "plats"
+	}
+	plats[13] = {
+		x: 1800,
+		y: 420,
+		width: 400,
+		height: 20,
+		model: "plats"
+	}
+	plats[14] = {
+		x: 1500,
+		y: 470,
+		width: 170,
+		height: 190,
+		model: "box2"
+	}
+	plats[15] = {
+		x: 1400,
+		y: 580,
+		width: 80,
+		height: 80,
+		model: "box1"
+	}
+	plats[16] = {
+		x: 2000,
+		y: 1080,
+		width: 100,
+		height: 20,
+		model: "boost",
+		updated: 1,
+		frame: 1,
+		toBoost: 1
+
+	}
+	plats[17] = {
+		x: 1680,
+		y: 580,
+		width: 80,
+		height: 80,
+		model: "box4"
+	}
+	plats[18] = {
+		x: 600,
+		y: 640,
+		width: 20,
+		height: 100,
+		model: "plats"
+	}
+	plats[19] = {
+		x: 300,
+		y: 320,
+		width: 20,
+		height: 100,
+		model: "plats"
+	}
+	plats[20] = {
+		x: 1150,
+		y: 320,
+		width: 20,
+		height: 100,
+		model: "plats"
+	}
+	plats[21] = {
+		x: 320,
+		y: 340,
+		width: 830,
+		height: 80,
+		model: "acid",
+		toDie: 1
+	}
+	plats[22] = {
+		x: 400,
+		y: 300,
+		width: 50,
+		height: 20,
+		model: "plats",
+		updated: 1,
+		unStatic: 1,
+		moveObj: {
+			move: 1,
+			speed: 1,
+			goFromX: 400,
+			goToX: 1000 
+		}
+	}
+	plats[23] = {
+		x: 1250,
+		y: 850,
+		width: 100,
+		height: 20,
+		model: "plats"
+	}
+	plats[24] = {
+		x: 1750,
+		y: 850,
+		width: 100,
+		height: 20,
+		model: "plats"
+	}
+	plats[25] = {
+		x: 1500,
+		y: 950,
+		width: 100,
+		height: 20,
+		model: "plats"
+	}
+	plats[26] = {
+		x: 25,
+		y: 1000,
+		width: 10,
+		height: 100,
+		toPort: 1,
+		portObj: {
+			portToX: 2000,
+			portToY: 319
+		},
+		model: "portal",
+		frameTime: 1
+	}
+	plats[27] = {
+		x: 2065,
+		y: 320,
+		width: 10,
+		height: 100,
+		toPort: 1,
+		portObj: {
+			portToX: 40,
+			portToY: 1000
+		},
+		model: "portal",
+		frameTime: 1
+	}
+	plats[28] = {
+		x: 550,
+		y: 690,
+		width: 50,
+		height: 50,
+		model: "box3"
+	}
+	plats[29] = {
+		x: 620,
+		y: 700,
+		width: 40,
+		height: 40,
+		model: "box4"
+	}
+	plats[30] = {
+		x: 0,
+		y: 760,
+		width: 100,
+		height: 60,
+		model: "box4"
+	}
+	plats[31] = {
+		x: 300,
+		y: 1000,
+		width: 100,
+		height: 100,
+		updated: 1,
+		model: "box2",
+		unStatic: 1,
+		moveObj: {
+			move: 1,
+			speed: 0.5,
+			goFromX: 300,
+			goToX: 500 
+		}
+	}
 
 
 
 
-//создание лежащего оружия
-// guns[0] = {
-// 	x: 100,
-// 	y: 570,
-// 	width: 70,
-// 	height: 17,
-// 	name: "gun",
-// 	takes: 0
-// }
 
-guns[1] = {
-	x: 700,
-	y: 250,
-	width: 70,
-	height: 27,
-	name: "m4a4",
-	takes: 2
+	//создание лежащего оружия
+	// guns[0] = {
+	// 	x: 100,
+	// 	y: 570,
+	// 	width: 70,
+	// 	height: 17,
+	// 	name: "gun",
+	// 	takes: 0
+	// }
+
+	guns[1] = {
+		x: 700,
+		y: 250,
+		width: 70,
+		height: 27,
+		name: "m4a4",
+		takes: 2
+	}
 }
 
 
@@ -380,9 +385,7 @@ guns[1] = {
 
 if (roundTime != undefined) {
 	setInterval(function(){
-		roundTime+=10
 		serverMoves()
-
 	},10)
 }else {
 	gameData()
@@ -395,6 +398,7 @@ if (roundTime != undefined) {
 
 //функция обработки движения различных объектов на сервере
 function serverMoves() {
+	roundTime+=10
 	//движение пуль
 	for (var s in shots) { 
 		if (shots[s].dir == 1) {
@@ -455,13 +459,15 @@ function serverMoves() {
 			even: "SOUNDS",
 			sounds: tmpSounds
 		}
-		socketServer.clients.forEach(client => {
-			if (client.readyState === WebSocket.OPEN) {
-				if (client.onclient == players[p].id) {
-					client.send(JSON.stringify(userInfo))
+		if (tmpSounds.length != 0) {
+			socketServer.clients.forEach(client => {
+				if (client.readyState === WebSocket.OPEN) {
+					if (client.onclient == players[p].id) {
+						client.send(JSON.stringify(userInfo))
+					}
 				}
-			}
-		})
+			})
+		}
 	}
 
 	sounds = []
@@ -514,18 +520,16 @@ function respawnPlayer(index,time) {
 	})
 }
 
-
-
-
-
+var startConnection
+var requestConnection
+var pingCount = 0
 
 const WebSocket = require('ws')
-const socketServer = new WebSocket.Server({ server }, ()=>{
-	console.log(chalk.bgGreen("WebSocket server has been started on 8080..."))
-})
+const socketServer = new WebSocket.Server({ server })
+console.log(chalk.bgGreen("WebSocket server has been started on "+PORT+"..."))
 
 socketServer.on('connection', ws => {	
-
+	startConnection = new Date()
 	ws.on('message', message => {
 		let userInfoReq = JSON.parse(message)
 		let userInfo
@@ -533,8 +537,11 @@ socketServer.on('connection', ws => {
 
 		switch (userInfoReq.even) {
 			case "START":
+				requestConnection = new Date()
+				ms = requestConnection.valueOf() - startConnection.valueOf();
+				
 				playersCount++;
-				console.log(chalk.cyan("User id: "+playersCount+" connected to SocetServer..."))
+				console.log(chalk.cyan("User id: "+playersCount+" connected to SocetServer..."+" ---Connection ping: "+ms))
 				players[playersCount] = {
 					id: playersCount,
 					nick: userInfoReq.nick,
