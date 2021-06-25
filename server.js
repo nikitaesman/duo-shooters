@@ -206,9 +206,9 @@ server.listen(PORT, ()=>{
 	}
 	plats[15] = {
 		x: 1400,
-		y: 580,
+		y: 590,
 		width: 80,
-		height: 80,
+		height: 70,
 		model: "box1"
 	}
 	plats[16] = {
@@ -224,9 +224,9 @@ server.listen(PORT, ()=>{
 	}
 	plats[17] = {
 		x: 1680,
-		y: 580,
+		y: 590,
 		width: 80,
-		height: 80,
+		height: 70,
 		model: "box4"
 	}
 	plats[18] = {
