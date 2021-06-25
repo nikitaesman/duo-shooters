@@ -18,7 +18,20 @@
 		    font-display: swap;
 		}
 		body {
+			margin: 0px;
+			padding: 0px;
 			overflow: hidden;
+			font-family: 'PressStart2P';
+			line-height: 12px;
+		}
+		div, p, form, input, a, span, button, textarea  {
+			box-sizing: border-box;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		html {
+		    scroll-behavior: smooth;
 		}
 		.game {
 			display: flex;
@@ -53,13 +66,117 @@
 			background: rgba(74,138,244,0.5);
 			backdrop-filter: blur(10px);
 		}
+		#hud {
+			display: block;
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			top: 0px;
+			left: 0px;
+		}
+		#ping {
+			display: flex;
+			width: 100px;
+			position: absolute;
+			top: 10px;
+			left: 10px;
+			color: #FF0800;
+			font-size: 8px;
+			text-align: center;
+			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+		}
+		#notificationsLine {
+			display: flex;
+			flex-direction: column;
+			text-align: right;
+			width: 300px;
+			position: absolute;
+			right: 10px;
+			top: 10px;
+			color: #FDA800;
+			font-size: 8px;
+		}
+		#notificationsLine p {
+			line-height: 10px;
+			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+		}
+
+
+		.enterNick {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			width: 100%;
+			height: 100%;
+		}
+		.enterNick_text {
+			display: block;
+			width: 200px;
+			background: #FDA800;
+			font-family: 'PressStart2P';
+			color: #fff;
+			outline: none;
+			text-decoration: none;
+			border: 2px solid #000;
+			margin-right: 10px;
+			padding: 5px;
+		}
+		.enterNick_submit {
+			display: none;
+			text-align: center;
+			align-items: center;
+			background: #1AA15F;
+			border: 2px solid #000;
+			width: 40px;
+			height: 40px; 
+			font-size: 14px;
+			cursor: pointer;
+		}
+		#time {
+			display: block;
+			position: absolute;
+			top: 20px;
+			left: 400px;
+			color: #fff;
+			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+		}
 	</style>
 	<section class="game">	
 		<div class="game__view">
 			<canvas id="canvas"></canvas>
 			<canvas id="tab"></canvas>
+			<div id="hud">
+				<div id="ping"></div>
+				<div id="notificationsLine"></div>
+				<div id="time"></div>
+			</div>
+			<div class="enterNick">
+				<input type="text" class="enterNick_text">
+				<div class="enterNick_submit">Go</div>
+			</div>
 		</div>
 	</section>
 	<script type="text/javascript" src="script.js"></script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

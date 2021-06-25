@@ -51,6 +51,7 @@ server.listen(PORT, ()=>{
 //gameData --------------------------------------------
 {
 	var spawns = []
+	var spawnPickPoint = 1;
 	spawns[1] = {
 		x: 1300,
 		y: 980
@@ -267,7 +268,7 @@ server.listen(PORT, ()=>{
 		unStatic: 1,
 		moveObj: {
 			move: 1,
-			speed: 1,
+			speed: 0.5,
 			goFromX: 400,
 			goToX: 1000 
 		}
@@ -387,8 +388,6 @@ if (roundTime != undefined) {
 	setInterval(function(){
 		serverMoves()
 	},10)
-}else {
-	gameData()
 }
 
 
@@ -396,7 +395,7 @@ if (roundTime != undefined) {
 
 
 
-//функция обработки движения различных объектов на сервере
+//функция обработки движка на сервере
 function serverMoves() {
 	roundTime+=10
 	//движение пуль
@@ -503,6 +502,9 @@ function respawnPlayer(index,time) {
 	players[index].deadTime = roundTime
 	players[index].dead = 1;
 	players[index].deads += 1;
+	spawnPick()
+	players[index].spawnX = spawns[spawnPickPoint].x
+	players[index].spawnY = spawns[spawnPickPoint].y
 	socketServer.clients.forEach(client => {
 		if (client.readyState === WebSocket.OPEN) {
 			if (client.onclient == players[index].id) {
@@ -520,9 +522,28 @@ function respawnPlayer(index,time) {
 	})
 }
 
+function notification(mes) {
+	userInfoMes = {
+		even: "NOTIFICATION",
+		mes: mes
+	}
+	socketServer.clients.forEach(client => {
+		if (client.readyState === WebSocket.OPEN) {
+			client.send(JSON.stringify(userInfoMes))
+		}
+	})
+}
+
+function spawnPick() {
+	if (spawnPickPoint == 5) {
+		spawnPickPoint = 1
+	}else {
+		spawnPickPoint ++
+	}
+}
+
 var startConnection
 var requestConnection
-var pingCount = 0
 
 const WebSocket = require('ws')
 const socketServer = new WebSocket.Server({ server })
@@ -542,11 +563,14 @@ socketServer.on('connection', ws => {
 				
 				playersCount++;
 				console.log(chalk.cyan("User id: "+playersCount+" connected to SocetServer..."+" ---Connection ping: "+ms))
+				spawnPick()
 				players[playersCount] = {
 					id: playersCount,
 					nick: userInfoReq.nick,
-					x: spawns[1].x,
-					y: spawns[1].y,
+					x: spawns[spawnPickPoint].x,
+					y: spawns[spawnPickPoint].y,
+					spawnX: spawns[spawnPickPoint].x,
+					spawnY: spawns[spawnPickPoint].y,
 					platsNum: plats.length+1,
 					persDir: 0,
 					dead: 0,
@@ -561,8 +585,8 @@ socketServer.on('connection', ws => {
 					even: "START",
 					id: players[playersCount].id,
 					plats: plats,
-					spawnX: players[playersCount].x,
-					spawnY: players[playersCount].y,
+					spawnX: players[playersCount].spawnX,
+					spawnY: players[playersCount].spawnY,
 					connTime: players[playersCount].connTime,
 					roundTime: roundTime,
 					takeWeapon: players[playersCount].takeWeapon
@@ -636,6 +660,7 @@ socketServer.on('connection', ws => {
 							id: players[u].id,
 							x: players[u].x,
 							y: players[u].y,
+							nick: players[u].nick,
 							persDir: players[u].persDir,
 							platsNum: players[u].platsNum,
 							dead: players[u].dead,
@@ -667,7 +692,8 @@ socketServer.on('connection', ws => {
 								name: "dead",
 								for: murderID
 							})
-							console.log("Игрок: "+killerID+"("+players[killerID].kills+")"+"убил игрока: "+players[murderID].id)
+							var notfMes = players[killerID].nick+" убил "+players[murderID].nick
+							notification(notfMes)
 							respawnPlayer(murderID,5000)
 							break;
 						}
@@ -712,7 +738,8 @@ socketServer.on('connection', ws => {
 
 							) 
 						{	
-							console.log("Игрок: "+userInfoReq.id+" решил поплавать в лаве")
+							var notfMes = players[userInfoReq.id].nick+" решил поплавать в кислоте"
+							notification(notfMes)
 							respawnPlayer(userInfoReq.id,5000)
 							sounds.push({
 								name: "dead",
@@ -733,6 +760,8 @@ socketServer.on('connection', ws => {
 				userInfo = {
 					even: "UPDATE",
 					id: userInfoReq.id,
+					spawnX: players[userInfoReq.id].spawnX,
+					spawnY: players[userInfoReq.id].spawnY,
 					dead: players[userInfoReq.id].dead,
 					deadTime: players[userInfoReq.id].deadTime,
 					enemys: enemys,

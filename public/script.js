@@ -1,14 +1,37 @@
 //game duo shooters production Flecs1th
+console.log('Game duo shooters production Flecs1th')
 
 var canv = document.querySelector("#canvas");
 canv.width = 2100;
 canv.height = 1100;
 var ctx = canv.getContext("2d");
 
+ctx.mozImageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.msImageSmoothingEnabled = false;
+ctx.imageSmoothingEnabled = false;
+
 var tab = document.querySelector("#tab");
 tab.width = 900;
 tab.height = 500;
 var ctx2 = tab.getContext("2d");
+
+
+
+//hud----------------
+var hudPing = document.querySelector("#ping");
+var hudNotfLine = document.querySelector("#notificationsLine");
+var hudTime = document.querySelector("#time");
+
+
+
+
+
+
+
+
+
+
 
 //дефолтные текстуры
 var pep = new Image();
@@ -74,6 +97,7 @@ anim_boost5.src = "img/models/boost/5.png";
 var sounds;
 var gameEngineOperation;
 var ping = null;
+var devMode = 0;
 
 
 //Позиция игрока
@@ -84,6 +108,7 @@ var MINyPos = yPos;
 var dead;
 var spawnX;
 var spawnY;
+var nick = "";
 
 
 //позиция камеры
@@ -140,6 +165,8 @@ var tempPlats = [];
 var guns = [];
 var shots = [];
 var enemys = [];
+var notifications = [];
+
 
 
 function pingChecker() {  
@@ -158,9 +185,6 @@ function pingChecker() {
 	    }
 	}
 }
-
-setInterval(pingChecker,1000);
-
 
 window.onkeydown = function(e) {
 	if (dead != 1) {
@@ -205,11 +229,21 @@ window.onkeydown = function(e) {
 	       	take = 1;
 	        key = "E";
 	    }
-	    if ((e.key === "Tab" || e.keyCode === 9))  {
-	        event.preventDefault();
-	        viewTab = 1;
-	    }
 	}
+	if ((e.key === "Tab" || e.keyCode === 9))  {
+        event.preventDefault();
+        viewTab = 1;
+    }
+    if ((e.key === "`" || e.keyCode === 192))  {
+        event.preventDefault();
+        if (devMode == 0) {
+        	devMode = 1;
+        	canv.style.background = '#fff';
+        }else {
+        	devMode = 0;
+        	canv.style.background = ''
+        }
+    }
 }
 
 window.onkeyup = function(e) {
@@ -475,34 +509,13 @@ function gameСycle() {
 		}	
 	}//главный перебор платформ----------------------------
 
-	//перебор массива с оружиями
-	for (var k in guns) {
-		if (guns[k] == null) {
+	//перебор массива уведомлений
+	for(var n in notifications) {
+		if (notifications[n] === null) {
 			continue;
 		}
-		mayTake = 0
-		if (guns[k].takes != 1) {
-			var gx = 1;
-			while (gx != guns[k].width) {
-				gx++;
-				if (
-						(
-							(guns[k].x+gx > xPos)&&(guns[k].x+gx < xPos+pep.width)
-						)
-						&&
-						(
-							(guns[k].y < yPos+pep.height && guns[k].y > yPos)
-						)
-						&& takeWeapon != guns[k].name 
-					) 
-				{
-					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
-					if (take == 1) {
-						sendTake(takeWeapon,k);
-						break;
-					}
-				}
-			}
+		if (notifications[n].timeToDel < roundTime) {
+			notifications.splice(n,1);
 		}
 	}
 
@@ -532,106 +545,109 @@ function draw() {
 			continue;
 		}
 
-		//отрисовка номеров платформ
-		ctx.fillStyle = "#000";
-		ctx.font = "10px Verdana";
-		ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
+		if (devMode == 1) {
+			//отрисовка номеров платформ
+			ctx.fillStyle = "#FF0400";
+			ctx.font = "10px Verdana";
+			ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
 
-		
-		if(plats[i].toDie == 1) {
-			ctx.fillStyle = "#E76224";
-		}
-		else if(plats[i].toPort == 1) {
-			ctx.fillStyle = "#1AA160";
-		}
-		else if(plats[i].toBoost == 1) {
-			ctx.fillStyle = "#BA55D3";
+			
+			if(plats[i].toDie == 1) {
+				ctx.fillStyle = "#E76224";
+			}
+			else if(plats[i].toPort == 1) {
+				ctx.fillStyle = "#1AA160";
+			}
+			else if(plats[i].toBoost == 1) {
+				ctx.fillStyle = "#BA55D3";
+			}else {
+				ctx.fillStyle = "#416D71";	
+			}
+			//дефолтный стиль отрисовка платформ
+			ctx.fillRect(plats[i].x,plats[i].y,plats[i].width,plats[i].height);
 		}else {
-			ctx.fillStyle = "#416D71";	
-		}
-		//дефолтный стиль отрисовка платформ
-		//ctx.fillRect(plats[i].x,plats[i].y,plats[i].width,plats[i].height);
-		//отрисовка текстур платформ
-		switch (plats[i].model) {
-			case "plats":
-				if(plats[i].width > plats[i].height) {
-					//отрисовка текстуры платформы
-					if (plats[i].width > 100) {
-						var t = 0; 
-						var pltDrawX = plats[i].x;
-						var pltDrawW = plats[i].width;
-						while (t < Math.ceil(plats[i].width/100)) {
-							t++;
-							
-							if(pltDrawW < 100) {
-								ctx.drawImage(model_plat,pltDrawX,plats[i].y,pltDrawW,plats[i].height)
-								break;
-							}else {
-								ctx.drawImage(model_plat,pltDrawX,plats[i].y,100,plats[i].height)
+			//отрисовка текстур платформ
+			switch (plats[i].model) {
+				case "plats":
+					if(plats[i].width > plats[i].height) {
+						//отрисовка текстуры платформы
+						if (plats[i].width > 100) {
+							var t = 0; 
+							var pltDrawX = plats[i].x;
+							var pltDrawW = plats[i].width;
+							while (t < Math.ceil(plats[i].width/100)) {
+								t++;
+								
+								if(pltDrawW < 100) {
+									ctx.drawImage(model_plat,pltDrawX,plats[i].y,pltDrawW,plats[i].height)
+									break;
+								}else {
+									ctx.drawImage(model_plat,pltDrawX,plats[i].y,100,plats[i].height)
+								}
+								pltDrawX+=100;
+								pltDrawW = (plats[i].width-(t*100));
 							}
-							pltDrawX+=100;
-							pltDrawW = (plats[i].width-(t*100));
+						}else {
+							ctx.drawImage(model_plat,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
 						}
 					}else {
-						ctx.drawImage(model_plat,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+						//отрисовка текстуры стены
+						
+						ctx.drawImage(model_wall,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+						
 					}
-				}else {
-					//отрисовка текстуры стены
-					
-					ctx.drawImage(model_wall,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-					
-				}
-				break;
-			case "box1":
-				ctx.drawImage(model_box1,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "box2":
-				ctx.drawImage(model_box2,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "box3":
-				ctx.drawImage(model_box3,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "box4":
-				ctx.drawImage(model_box4,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "magma":
-				ctx.drawImage(model_magma,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "acid":
-				ctx.drawImage(model_acid,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
-				break;
-			case "portal":
-				if (roundTime-plats[i].frameTime > 200) {
-					ctx.drawImage(anim_portal3,plats[i].x-20,plats[i].y,50,plats[i].height)
-					plats[i].frameTime = roundTime;
-				}
-				else if (roundTime-plats[i].frameTime > 100) {
-					ctx.drawImage(anim_portal2,plats[i].x-20,plats[i].y,50,plats[i].height)
-				}
-				else if (roundTime-plats[i].frameTime > 0) {
-					ctx.drawImage(anim_portal1,plats[i].x-20,plats[i].y,50,plats[i].height)
-				}
-				break;
-			case "boost":
-				switch (plats[i].frame) {
-					case 1:
-						ctx.drawImage(anim_boost1,plats[i].x,plats[i].y-70,100,90)
-						break;
-					case 2:
-						ctx.drawImage(anim_boost2,plats[i].x,plats[i].y-70,100,90)
-						break;
-					case 3:
-						ctx.drawImage(anim_boost3,plats[i].x,plats[i].y-70,100,90)
-						break;
-					case 4:
-						ctx.drawImage(anim_boost4,plats[i].x,plats[i].y-70,100,90)
-						break;
-					case 5:
-						ctx.drawImage(anim_boost5,plats[i].x,plats[i].y-70,100,90)
-						break;
-				}
+					break;
+				case "box1":
+					ctx.drawImage(model_box1,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "box2":
+					ctx.drawImage(model_box2,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "box3":
+					ctx.drawImage(model_box3,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "box4":
+					ctx.drawImage(model_box4,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "magma":
+					ctx.drawImage(model_magma,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "acid":
+					ctx.drawImage(model_acid,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "portal":
+					if (roundTime-plats[i].frameTime > 200) {
+						ctx.drawImage(anim_portal3,plats[i].x-20,plats[i].y,50,plats[i].height)
+						plats[i].frameTime = roundTime;
+					}
+					else if (roundTime-plats[i].frameTime > 100) {
+						ctx.drawImage(anim_portal2,plats[i].x-20,plats[i].y,50,plats[i].height)
+					}
+					else if (roundTime-plats[i].frameTime > 0) {
+						ctx.drawImage(anim_portal1,plats[i].x-20,plats[i].y,50,plats[i].height)
+					}
+					break;
+				case "boost":
+					switch (plats[i].frame) {
+						case 1:
+							ctx.drawImage(anim_boost1,plats[i].x,plats[i].y-70,100,90)
+							break;
+						case 2:
+							ctx.drawImage(anim_boost2,plats[i].x,plats[i].y-70,100,90)
+							break;
+						case 3:
+							ctx.drawImage(anim_boost3,plats[i].x,plats[i].y-70,100,90)
+							break;
+						case 4:
+							ctx.drawImage(anim_boost4,plats[i].x,plats[i].y-70,100,90)
+							break;
+						case 5:
+							ctx.drawImage(anim_boost5,plats[i].x,plats[i].y-70,100,90)
+							break;
+					}
 
-				break;
+					break;
+			}
 		}
 	}
 	//отрисовка пуль
@@ -669,6 +685,9 @@ function draw() {
 	   			ctx.drawImage(vitia2,0,0);
 			    ctx.restore();
 			}
+			//отрисовка ника врага
+			var tmpNickX = enemys[e].nick.length
+			ctx.fillText(enemys[e].nick, enemys[e].xPos-tmpNickX, enemys[e].y-10);
 			if(enemys[e].takeWeapon != 0) {
 				if(enemys[e].takeWeapon == "gun") {
 					if (enemys[e].persDir == 1) {
@@ -710,6 +729,9 @@ function draw() {
 			ctx.drawImage(vitia,0,0);
 	    	ctx.restore();
 		}
+		//отрисовка ника игрока
+		var tmpNickX = nick.length
+		ctx.fillText(nick, xPos-tmpNickX, yPos-10);
 		//отрисовка оружия у игрока
 		if (takeWeapon != 0) {
 			switch (takeWeapon) {
@@ -755,41 +777,55 @@ function draw() {
 					ctx.drawImage(m4a4,guns[k].x,guns[k].y);
 					break;
 			}
+			var gx = 1;
+			while (gx != guns[k].width) {
+				gx++;
+				if (
+						(
+							(guns[k].x+gx > xPos)&&(guns[k].x+gx < xPos+pep.width)
+						)
+						&&
+						(
+							(guns[k].y < yPos+pep.height && guns[k].y > yPos)
+						)
+						&& takeWeapon != guns[k].name 
+					) 
+				{
+					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
+					if (take == 1) {
+						sendTake(takeWeapon,k);
+						break;
+					}
+				}
+			}
 		}
 	}
+
 	
 	if (reload == 1) {
 		ctx.drawImage(reloadImg,xPos+5,yPos-45);
 	}
 
-
 	
-	
-	
-	
-	// рисование текста
-	ctx.fillStyle = "#000";
-	ctx.font = "40px Verdana";
-	ctx.fillText("onStay: " + onStay, 10, 50);
-	ctx.fillText("Last Key: " + key, 300, 50);
-	ctx.fillText("onPlatformAll: " + onPlatformAll, 10, 100);
-	ctx.fillText("underPlatformAll: " + underPlatformAll, 10, 150);
-	ctx.fillText("barrierLeftAll: " + barrierLeftAll, 10, 200);
-	ctx.fillText("barrierRightAll: " + barrierRightAll, 10, 250);
-	//вывод координат
-	ctx.font = "10px Verdana";
-	ctx.fillText("xPos: " + xPos, xPos, yPos-20);
-	ctx.fillText("yPos: " + yPos, xPos, yPos-10);
-	ctx.fillText("xCam: " + xCam, xPos, yPos-40);
-	ctx.fillText("yCam: " + yCam, xPos, yPos-30);
-	ctx.fillText("minY: " + MINyPos, 850, 100);
-	ctx.fillText("Time: " + roundTime, xPos, yPos-50);
-	ctx.fillText("onPlatformAll: " + onPlatformAll, xPos, yPos-60);
-	ctx.fillText("underPlatformAll: " + underPlatformAll, xPos, yPos-70);
-	ctx.fillText("barrierLeftAll: " + barrierLeftAll, xPos, yPos-80);
-	ctx.fillText("barrierRightAll: " + barrierRightAll, xPos, yPos-90);
-	ctx.fillText("minY+100: " + MINyPos, xPos, yPos-100);
-	ctx.fillText("grav: " + (Math.floor(moveSpeed*(grav/13))), xPos, yPos-110);
+	if (devMode == 1) {
+		// рисование текста над игроком
+		ctx.fillStyle = "#000";
+		ctx.font = "10px Verdana";
+		ctx.fillText("xPos: " + xPos, xPos, yPos-20);
+		ctx.fillText("yPos: " + yPos, xPos, yPos-10);
+		ctx.fillText("xCam: " + xCam, xPos, yPos-40);
+		ctx.fillText("yCam: " + yCam, xPos, yPos-30);
+		ctx.fillText("Time: " + roundTime, xPos, yPos-50);
+		ctx.fillText("onPlatformAll: " + onPlatformAll, xPos, yPos-60);
+		ctx.fillText("underPlatformAll: " + underPlatformAll, xPos, yPos-70);
+		ctx.fillText("barrierLeftAll: " + barrierLeftAll, xPos, yPos-80);
+		ctx.fillText("barrierRightAll: " + barrierRightAll, xPos, yPos-90);
+		ctx.fillText("minY+100: " + MINyPos, xPos, yPos-100);
+		ctx.fillText("grav: " + (Math.floor(moveSpeed*(grav/13))), xPos, yPos-110);
+		ctx.fillStyle = "#4A8AF4";
+		ctx.font = "40px Verdana";
+		ctx.fillText("devMode", xPos-350, yPos-150);
+	}
 
 	if(dead == 1) {
 		ctx.fillStyle = "rgba(74,138,244,0.5)";
@@ -809,32 +845,51 @@ function draw() {
 	}
 	ctx2.fillStyle = "#fff";
 	ctx2.font = "20px PressStart2P";
+
 	for(var t in stats) {
 		var numT = Number(t)+1;
-		var roundTimeStamp = new Date(roundTime)
+		
 		ctx2.fillText("#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads,200,200+(t*20));
-		ctx2.fillText("Время раунда: "+roundTimeStamp.getMinutes()+":"+roundTimeStamp.getSeconds(),400,40);
 	}
 
-	if (ping != null) {
-		ctx2.fillStyle = "#fff";
-		ctx2.font = "20px PressStart2P";
-		ctx2.fillText("Ping: "+ping,50,50);
+	var roundTimeStamp = new Date(roundTime);
+	if (roundTimeStamp.getSeconds() < 10) {
+		var roundTimeStampMinutesTmp = "0"+roundTimeStamp.getSeconds();
+	}else {
+		var roundTimeStampMinutesTmp = roundTimeStamp.getSeconds();
 	}
+	hudTime.innerHTML = roundTimeStamp.getMinutes()+":"+roundTimeStampMinutesTmp;
 
-	//отображение пользовательского интерфейса
-		//время раунда
-		// ctx.fillStyle = "rgba(107,131,136,0.5)";
-		// ctx.fillRect(xPos-25,yPos-200,100,25);
-		// ctx.font = "20px Verdana";
-		// ctx.fillStyle = "#000";
-		// ctx.fillText(Math.floor(roundTime/1000),xPos-20,yPos-180);
+
+
+
+
 	if (gameEngineOperation == 1) {
 		requestAnimationFrame(draw);
 		//setTimeout(draw,10);
 	}
 }// закртие draw
 
+//отрисовка интерфейса------------------------------------------------------------
+setInterval(()=>{
+	//отрисовка пинга
+	if (ping != null) {
+		if (ping > 100) {
+			hudPing.style.color = "#FF0800";
+		}else if (ping > 50) {
+			hudPing.style.color = "#FFDB00";
+		}else {
+			hudPing.style.color = "#44FF2B";
+		}
+		hudPing.innerHTML = "Ping: "+ping;
+	}
+
+	//отрисовка уведомлений
+	hudNotfLine.innerHTML = "";
+	for(var n in notifications) {
+		hudNotfLine.innerHTML += "<p>"+notifications[n].mes+"</p>";
+	}
+},500)
 
 
 
@@ -864,8 +919,21 @@ const ws = new WebSocket(HOST);
 
 ws.onopen = () => {
 	console.log('status: online');
-	gameEngineOperation = 1;
-	sendStartGame();
+	var inpNick = document.querySelector(".enterNick_text");
+	var inpBut = document.querySelector(".enterNick_submit");
+	inpNick.oninput = ()=>{
+		if(inpNick.value != "") {
+			inpBut.style.display = 'flex';
+			inpBut.onclick = ()=>{
+				nick = inpNick.value;
+				document.querySelector(".enterNick").style.display = 'none';
+				gameEngineOperation = 1;
+				sendStartGame();
+			}
+		}else {
+			inpBut.style.display = 'none';
+		}
+	}
 };
 
 ws.onclose = () => {
@@ -888,6 +956,8 @@ ws.onmessage = response => {
 		console.log("UserID: "+userID);
 		gameСycle();
 		draw();
+		pingChecker();
+		setInterval(pingChecker,1000);
 	}
 
 	if (res.even == "UPDATE") {
@@ -903,7 +973,8 @@ ws.onmessage = response => {
 		// 		}
 		// 	}
 		// }
-
+		spawnX = res.spawnX;
+		spawnY = res.spawnY;
 		shots = res.shots;
 		guns = res.guns;
 		takeWeapon = res.takeWeapon;
@@ -916,6 +987,13 @@ ws.onmessage = response => {
 			plats[index] = tempPlats[i].info;
 		}
 		roundTime = res.roundTime;
+	}
+	if (res.even == "NOTIFICATION") {
+		var notfTimeToDel = roundTime+3000;
+		notifications.push({
+			mes: res.mes,
+			timeToDel: notfTimeToDel
+		})
 	}
 	if (res.even == "SOUNDS") {
 		sounds = res.sounds;
@@ -980,7 +1058,7 @@ ws.onmessage = response => {
 function sendStartGame() {
 	var userInfoStart = {
 		even: "START",
-		nick: "Flecs1th"
+		nick: nick
 	}
 	ws.send(JSON.stringify(userInfoStart));
 }
