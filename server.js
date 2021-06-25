@@ -433,9 +433,17 @@ function serverMoves() {
 			kills: players[p].kills,
 			deads: players[p].deads
 		})
+	}
+	function sortByKills(arr) {
+	  arr.sort((a, b) => a.kills < b.kills ? 1 : -1);
+	}
+
+	sortByKills(stats)
 
 
 
+
+	for (var p in players) {
 	//отправка звуков клиентам
 		var tmpSounds = []
 		for(var s in sounds) {

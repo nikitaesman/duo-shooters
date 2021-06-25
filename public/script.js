@@ -11,18 +11,14 @@ ctx.webkitImageSmoothingEnabled = false;
 ctx.msImageSmoothingEnabled = false;
 ctx.imageSmoothingEnabled = false;
 
-var tab = document.querySelector("#tab");
-tab.width = 900;
-tab.height = 500;
-var ctx2 = tab.getContext("2d");
-
 
 
 //hud----------------
 var hudPing = document.querySelector("#ping");
 var hudNotfLine = document.querySelector("#notificationsLine");
 var hudTime = document.querySelector("#time");
-
+var hudStatsTable = document.querySelector("#statsTable");
+var hudStatsInner = document.querySelector(".stats__inner");
 
 
 
@@ -156,8 +152,6 @@ var onPlatformCorrect = 0;
 var underPlatform = 0;
 var underPlatformAll = 0;
 
-
-var viewTab = 0;
 var stats = [];
 
 var plats = [];
@@ -232,7 +226,7 @@ window.onkeydown = function(e) {
 	}
 	if ((e.key === "Tab" || e.keyCode === 9))  {
         event.preventDefault();
-        viewTab = 1;
+        hudStatsTable.style.display = 'flex'
     }
     if ((e.key === "`" || e.keyCode === 192))  {
         event.preventDefault();
@@ -264,7 +258,7 @@ window.onkeyup = function(e) {
     }
     if ((e.key === "Tab" || e.keyCode === 9))  {
     	event.preventDefault();
-        viewTab = 0;
+        hudStatsTable.style.display = 'none'
     }
 }
 
@@ -536,7 +530,6 @@ function gameСycle() {
 
 function draw() {
 	ctx.clearRect(0, 0, canv.width, canv.height);
-	ctx2.clearRect(0, 0, tab.width, tab.height);
 	
 
 	//отрисовка платформ
@@ -842,18 +835,11 @@ function draw() {
 		yPos = spawnY; 
 	}
 
-	if(viewTab == 1) {
-		tab.style.opacity = '1';
-	}else {
-		tab.style.opacity = '0';
-	}
-	ctx2.fillStyle = "#fff";
-	ctx2.font = "20px PressStart2P";
-
+	//вывод игровой статистики
+	hudStatsInner.innerHTML = "";
 	for(var t in stats) {
 		var numT = Number(t)+1;
-		
-		ctx2.fillText("#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads,200,200+(t*20));
+		hudStatsInner.innerHTML += "<p>"+"#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads+"</p>";
 	}
 
 	var roundTimeStamp = new Date(roundTime);

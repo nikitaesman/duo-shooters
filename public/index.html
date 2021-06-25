@@ -24,6 +24,9 @@
 			font-family: 'PressStart2P';
 			line-height: 12px;
 		}
+		font-smooth: never;
+		-webkit-font-smoothing : none;
+
 		div, p, form, input, a, span, button, textarea  {
 			box-sizing: border-box;
 			margin: 0px;
@@ -58,21 +61,13 @@
 			border: 2px solid #000;
 
 		}
-		#tab {
-			display: block;
-			position: absolute;
-			top: 0px;
-			left: 0px;
-			background: rgba(74,138,244,0.5);
-			backdrop-filter: blur(10px);
-		}
 		#hud {
 			display: block;
 			position: absolute;
 			width: 100%;
 			height: 100%;
 			top: 0px;
-			left: 0px;
+			left: 0px;	
 		}
 		#ping {
 			display: flex;
@@ -84,6 +79,7 @@
 			font-size: 8px;
 			text-align: center;
 			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+			z-index: 1000;
 		}
 		#notificationsLine {
 			display: flex;
@@ -95,10 +91,12 @@
 			top: 10px;
 			color: #FDA800;
 			font-size: 8px;
+			z-index: 1000;
 		}
 		#notificationsLine p {
 			line-height: 10px;
 			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+			z-index: 1000;
 		}
 
 
@@ -111,6 +109,9 @@
 			left: 0px;
 			width: 100%;
 			height: 100%;
+			background: rgba(74,138,244,0.5);
+			backdrop-filter: blur(10px);
+			z-index: 1000;
 		}
 		.enterNick_text {
 			display: block;
@@ -123,10 +124,12 @@
 			border: 2px solid #000;
 			margin-right: 10px;
 			padding: 5px;
+			z-index: 1000;
 		}
 		.enterNick_submit {
 			display: none;
 			text-align: center;
+			justify-content: center;
 			align-items: center;
 			background: #1AA15F;
 			border: 2px solid #000;
@@ -134,6 +137,11 @@
 			height: 40px; 
 			font-size: 14px;
 			cursor: pointer;
+			z-index: 1000;
+			transition: background .2s ease;
+		}
+		.enterNick_submit:hover {
+			background: #168B53;
 		}
 		#time {
 			display: block;
@@ -142,6 +150,34 @@
 			left: 400px;
 			color: #fff;
 			text-shadow: #000 0.5px 0.5px 1px,#000 -0.5px -0.5px 1px;
+			z-index: 1000;
+		}
+		#statsTable {
+			display: none;
+			justify-content: center;
+			width: 100%;
+			height: 100%;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+			padding-top: 70px;
+			background: rgba(74,138,244,0.5);
+			backdrop-filter: blur(10px);
+			z-index: 10;
+		}
+		.stats__inner {
+			display: flex;
+			flex-direction: column;
+			width: 400px;
+			max-height: 300px;
+		}
+		.stats__inner p {
+			display: block;
+			margin-top: 10px;
+			margin-bottom: 0px;
+			font-size: 17px;
+			color: #fff;
+			text-shadow: #000 1px 1px 0px,#000 -1px -1px 0px;
 		}
 	</style>
 	<section class="game">	
@@ -152,6 +188,10 @@
 				<div id="ping"></div>
 				<div id="notificationsLine"></div>
 				<div id="time"></div>
+				<div id="statsTable">
+					<div class="stats__inner">
+					</div>
+				</div>
 			</div>
 			<div class="enterNick">
 				<input type="text" class="enterNick_text" autofocus>
