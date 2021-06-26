@@ -679,10 +679,11 @@ function draw() {
 			    ctx.restore();
 			}
 			//отрисовка ника врага
-			ctx.fillStyle = "#157E14";
+			ctx.fillStyle = "#FA0018";
 			ctx.font = "10px PressStart2P";
-			var tmpNickX = enemys[e].nick.length
-			ctx.fillText(enemys[e].nick, enemys[e].xPos-tmpNickX, enemys[e].y-10);
+			var tmpNickX = enemys[e].nick;
+			tmpNickX = tmpNickX.length*0.9;
+			ctx.fillText(enemys[e].nick, enemys[e].x-tmpNickX, enemys[e].y-10);
 			if(enemys[e].takeWeapon != 0) {
 				if(enemys[e].takeWeapon == "gun") {
 					if (enemys[e].persDir == 1) {
@@ -727,7 +728,7 @@ function draw() {
 		//отрисовка ника игрока
 		ctx.fillStyle = "#157E14";
 		ctx.font = "10px PressStart2P";
-		var tmpNickX = nick.length
+		var tmpNickX = nick.length*0.9
 		ctx.fillText(nick, xPos-tmpNickX, yPos-10);
 		//отрисовка оружия у игрока
 		if (takeWeapon != 0) {
