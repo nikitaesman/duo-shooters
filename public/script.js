@@ -19,7 +19,7 @@ var hudNotfLine = document.querySelector("#notificationsLine");
 var hudTime = document.querySelector("#time");
 var hudStatsTable = document.querySelector("#statsTable");
 var hudStatsInner = document.querySelector(".stats__inner");
-
+var hudServerNotf = document.querySelector("#serverNotifications");
 
 
 
@@ -36,9 +36,11 @@ var vitia = new Image();
 var vitia2 = new Image();
 var gun = new Image();
 var m4a4 = new Image();
+var awp = new Image();
 var reloadImg = new Image();
 var prompt = new Image();
 var bullet = new Image();
+var bulletLong = new Image();
 
 
 pep.src = "img/main_model.png";
@@ -47,9 +49,11 @@ vitia.src = "img/vitia.png";
 vitia2.src = "img/vitia2.png";
 gun.src = "img/gun.png";
 m4a4.src = "img/m4a4.png";
+awp.src = "img/awp.png";
 reloadImg.src = "img/reload.png";
 prompt.src = "img/prompt.png";
 bullet.src = "img/bullet.png";
+bulletLong.src = "img/bulletLong.png";
 //текстуры предметов
 var model_plat = new Image();
 var model_wall = new Image();
@@ -127,6 +131,7 @@ var connTimeRange;
 var stepTime = 0;
 var gravTime = 0;
 var deadTime = 0;
+var lastFallTime = 0;
 
 
 //переменные оружия и предметов
@@ -149,6 +154,7 @@ var key = 0;
 var onPlatformNum = null;
 var onPlatformAll = 0;
 var onPlatformCorrect = 0;
+var underPlatformNum = null;
 var underPlatform = 0;
 var underPlatformAll = 0;
 
@@ -161,7 +167,14 @@ var shots = [];
 var enemys = [];
 var notifications = [];
 
-
+var wildbeats = document.querySelector(".wildbeats");
+document.querySelector(".soundState").onclick = ()=>{
+	if (wildbeats.muted == false) {
+		wildbeats.muted = true;
+	}else {
+		wildbeats.volume = false;
+	}
+}
 
 function pingChecker() {  
     var request = new XMLHttpRequest();
@@ -209,12 +222,28 @@ window.onkeydown = function(e) {
 	    			break;
 	    		case "m4a4":
 	    			//режим стрельбы
-	    			sendShotAdd("burst");
+	    			sendShotAdd("m4a4");
+	    			setTimeout(function(){
+						sendShotAdd("m4a4");
+					},200)
+					setTimeout(function(){
+						sendShotAdd("m4a4");
+					},400)
+
 	    			reload = 1;
 	    			//время перезарядки
 			        setTimeout(function(){
 			        	reload = 0;
 			        },1500);
+	    			break;
+	    		case "awp":
+	    			//режим стрельбы
+	    			sendShotAdd("awp");
+	    			reload = 1;
+	    			//время перезарядки
+			        setTimeout(function(){
+			        	reload = 0;
+			        },3000);
 	    			break;
 	    	} 
 	        key = "Enter";
@@ -368,19 +397,27 @@ function gameСycle() {
 
 		if (plats[i].unStatic == 1) {
 			//движение вместе с платформой, если мы на ней
-			if (onPlatformNum == i && plats[i].moveObj.move != 0) {
-				if (plats[i].moveObj.move == 1 && barrierRightAll == 0) {
+			if (onPlatformNum == i && plats[i].moveObj.moveX != 0) {
+				if (plats[i].moveObj.moveX == 1 && barrierRightAll == 0) {
 					xPos += plats[i].moveObj.speed;
 				}
-				if (plats[i].moveObj.move == -1 && barrierLeftAll == 0) {
+				if (plats[i].moveObj.moveX == -1 && barrierLeftAll == 0) {
 					xPos -= plats[i].moveObj.speed;
+				}
+			}
+			if (onPlatformNum == i && plats[i].moveObj.moveY != 0) {
+				if (plats[i].moveObj.moveY == 1) {
+					yPos += plats[i].moveObj.speed;
+				}
+				if (plats[i].moveObj.moveY == -1 && underPlatformAll == 0) {
+					yPos -= plats[i].moveObj.speed;
 				}
 			}
 		}
 
-		var g = 5;
+		var g = 10;
 		var j = 1;
-		while(g != pep.width-5) {
+		while(g != pep.width-10) {
 			g++;
 			//проверка на нахождение на платформе
 			if (
@@ -397,20 +434,27 @@ function gameСycle() {
 				)
 			) {
 				
-				{
-					onPlatformAll = 1;
-					onPlatformNum = i;
-					if (onPlatformCorrect == 0) {
-						onPlatformCorrect = 1;
-						yPos = plats[i].y-pep.height-moveSpeed-1;
-						//sendSound("fall");
-					}
-					//проверка на буст
-					if(plats[i].toBoost == 1) {
-						jump = 41;//jump
-				        onStay = 0;
-				        sendAnimation("boost",i)
-				        break;
+				{	
+					if (plats[i].toPort == 1) {
+						xPos = plats[i].portObj.portToX;
+						yPos = plats[i].portObj.portToY;
+						var soundPortal = new Audio("sounds/portal.mp3");
+						soundPortal.autoplay = true;
+					}else {
+						onPlatformAll = 1;
+						onPlatformNum = i;
+						if (onPlatformCorrect == 0) {
+							onPlatformCorrect = 1;
+							yPos = plats[i].y-pep.height-moveSpeed-1;
+							sendSound("fall");
+						}
+						//проверка на буст
+						if(plats[i].toBoost == 1) {
+							jump = 41;//jump
+					        onStay = 0;
+					        sendAnimation("boost",i)
+					        break;
+						}
 					}
 				}
 			}
@@ -429,6 +473,7 @@ function gameСycle() {
 				)
 			) {
 				underPlatformAll = 1;
+				underPlatformNum = i;
 			}
 		}
 		while(j != plats[i].height) {
@@ -486,6 +531,12 @@ function gameСycle() {
 		//под платформой
 		if (underPlatformAll == 1) {
 			underPlatform = 1;
+			if (plats[i].unStatic == 1 && underPlatformNum == i) {
+				xPos += 1;
+			}
+			if(onPlatformAll == 1) {
+				xPos += 1;
+			}
 		}else {
 			underPlatform = 0;
 		}
@@ -538,13 +589,7 @@ function draw() {
 			continue;
 		}
 
-		if (devMode == 1) {
-			//отрисовка номеров платформ
-			ctx.fillStyle = "#FF0400";
-			ctx.font = "10px Verdana";
-			ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
-
-			
+		if (devMode == 1) {			
 			if(plats[i].toDie == 1) {
 				ctx.fillStyle = "#E76224";
 			}
@@ -643,28 +688,15 @@ function draw() {
 			}
 		}
 	}
-	//отрисовка пуль
-	for (var s in shots) { 
-		//отрисовка пуль
-		if (shots[s] != null) {
-			if (shots[s].dir == 1) {
-				ctx.drawImage(bullet,shots[s].x,shots[s].y);
-			}else {
-				ctx.save();
-	   			ctx.translate(shots[s].x,shots[s].y);
-			    ctx.scale(-1,1);
-	   			ctx.drawImage(bullet,0,0);
-			    ctx.restore();
-			}
+	
+	//отрисовка номеров платформ
+	for(var i in plats) {
+		if (devMode == 1) {
+			ctx.fillStyle = "#FF0400";
+			ctx.font = "10px Verdana";
+			ctx.fillText(i, plats[i].x+(plats[i].width/2), plats[i].y - 5);
 		}
 	}
-
-
-
-
-		
-	
-
 	//отрисовка врагов
 	for (var e in enemys) {
 		if (enemys[e].dead != 1) {
@@ -709,11 +741,22 @@ function draw() {
 					    ctx.restore();
 					}	
 				}
+				if(enemys[e].takeWeapon == "awp") {
+					if (enemys[e].persDir == 1) {
+						ctx.drawImage(awp,enemys[e].x-20,enemys[e].y+43);
+					}
+					if (enemys[e].persDir == 0) {
+						ctx.save();
+			   			ctx.translate(enemys[e].x-47+awp.width,enemys[e].y+43);
+					    ctx.scale(-1,1);
+			   			ctx.drawImage(awp,0,0);
+					    ctx.restore();
+					}
+				}
+
 			}
 		}
 	}
-	
-	
 	//отрисовка игрока
 	if (dead != 1) {
 		if (persDir == 1) {
@@ -757,10 +800,22 @@ function draw() {
 					    ctx.restore();
 					}	
 					break;
+				case "awp":
+					if (persDir == 1) {
+						ctx.drawImage(awp,xPos-20,yPos+43);
+					}
+					if (persDir == 0) {
+						ctx.save();
+			   			ctx.translate(xPos-47+awp.width,yPos+43);
+					    ctx.scale(-1,1);
+			   			ctx.drawImage(awp,0,0);
+					    ctx.restore();
+					}	
+					break;
 			}	
 		}
 	}
-	//отрисовка массива с оружиями
+	//отрисовка лежачего с оружиями
 	for (var k in guns) {
 		if (guns[k] == null) {
 			continue;
@@ -773,6 +828,15 @@ function draw() {
 					break;
 				case "m4a4":
 					ctx.drawImage(m4a4,guns[k].x,guns[k].y);
+					break;
+				case "awp":
+					ctx.drawImage(awp,guns[k].x,guns[k].y);
+								//текст над авиком
+								ctx.font = "8px PressStart2P";
+								
+								ctx.fillStyle = "#FB6523";
+								ctx.fillText("Я знаю ты хочешь меня",guns[k].x-20, guns[k].y-5);
+
 					break;
 			}
 			var gx = 1;
@@ -798,7 +862,36 @@ function draw() {
 			}
 		}
 	}
-
+	//отрисовка пуль
+	for (var s in shots) { 
+		//отрисовка пуль
+		if (shots[s] != null) {
+			switch (shots[s].type) {
+				case "default":
+					if (shots[s].dir == 1) {
+						ctx.drawImage(bullet,shots[s].x,shots[s].y);
+					}else {
+						ctx.save();
+			   			ctx.translate(shots[s].x,shots[s].y);
+					    ctx.scale(-1,1);
+			   			ctx.drawImage(bullet,0,0);
+					    ctx.restore();
+					}
+					break
+				case "through":
+					if (shots[s].dir == 1) {
+						ctx.drawImage(bulletLong,shots[s].x,shots[s].y);
+					}else {
+						ctx.save();
+			   			ctx.translate(shots[s].x,shots[s].y);
+					    ctx.scale(-1,1);
+			   			ctx.drawImage(bulletLong,0,0);
+					    ctx.restore();
+					}
+					break
+			}
+		}
+	}
 	
 	if (reload == 1) {
 		ctx.drawImage(reloadImg,xPos+5,yPos-45);
@@ -836,12 +929,12 @@ function draw() {
 		yPos = spawnY; 
 	}
 
-	//вывод игровой статистики
-	hudStatsInner.innerHTML = "";
-	for(var t in stats) {
-		var numT = Number(t)+1;
-		hudStatsInner.innerHTML += "<p>"+"#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads+"</p>";
-	}
+	// //вывод игровой статистики
+	// hudStatsInner.innerHTML = "";
+	// for(var t in stats) {
+	// 	var numT = Number(t)+1;
+	// 	hudStatsInner.innerHTML += "<p>"+"#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads+"---------ping: "+stats[t].ping+"</p>";
+	// }
 
 	var roundTimeStamp = new Date(roundTime);
 	if (roundTimeStamp.getSeconds() < 10) {
@@ -857,28 +950,37 @@ function draw() {
 
 	if (gameEngineOperation == 1) {
 		requestAnimationFrame(draw);
-		//setTimeout(draw,10);
 	}
 }// закртие draw
 
 //отрисовка интерфейса------------------------------------------------------------
 setInterval(()=>{
-	//отрисовка пинга
-	if (ping != null) {
-		if (ping > 100) {
-			hudPing.style.color = "#FF0800";
-		}else if (ping > 50) {
-			hudPing.style.color = "#FFDB00";
-		}else {
-			hudPing.style.color = "#44FF2B";
+	if (gameEngineOperation == 1) {
+		//отрисовка пинга
+		if (ping != null) {
+			if (ping > 100) {
+				hudPing.style.color = "#FF0800";
+			}else if (ping > 50) {
+				hudPing.style.color = "#FFDB00";
+			}else {
+				hudPing.style.color = "#44FF2B";
+			}
+			hudPing.innerHTML = "Ping: "+ping;
 		}
-		hudPing.innerHTML = "Ping: "+ping;
-	}
 
-	//отрисовка уведомлений
-	hudNotfLine.innerHTML = "";
-	for(var n in notifications) {
-		hudNotfLine.innerHTML += "<p>"+notifications[n].mes+"</p>";
+		//отрисовка уведомлений
+		hudNotfLine.innerHTML = "";
+		hudServerNotf.innerHTML = "";
+		for(var n in notifications) {
+			switch (notifications[n].from) {
+				case "server":
+					hudServerNotf.innerHTML += "<p>"+notifications[n].mes+"</p>";
+					break;
+				case "user":
+					hudNotfLine.innerHTML += "<p>"+notifications[n].mes+"</p>";
+					break;
+			}
+		}
 	}
 },500)
 
@@ -906,145 +1008,175 @@ setInterval(()=>{
 
 var HOST = location.origin.replace(/^http/, 'ws')
 
-const ws = new WebSocket(HOST);
+var ws;
+function WSconnect() {
+	ws = new WebSocket(HOST);
 
-ws.onopen = () => {
-	console.log('status: online');
-	var inpNick = document.querySelector(".enterNick_text");
-	var inpBut = document.querySelector(".enterNick_submit");
-	inpNick.oninput = ()=>{
-		if(inpNick.value != "") {
-			inpBut.style.display = 'flex';
-			inpBut.onclick = ()=>{
-				nick = inpNick.value;
-				document.querySelector(".enterNick").style.display = 'none';
-				gameEngineOperation = 1;
-				sendStartGame();
+	ws.onopen = () => {
+		console.log('status: online');
+		if(nick == 0) {
+			var enterNickForm = document.querySelector(".enterNick");
+			var inpNick = document.querySelector(".enterNick_text");
+			var inpBut = document.querySelector(".enterNick_submit");
+			inpNick.oninput = ()=>{
+				if(inpNick.value != "") {
+					inpBut.style.display = 'flex';
+					enterNickForm.onsubmit = function(e){
+						e.preventDefault();
+						nick = inpNick.value;
+						enterNickForm.style.display = 'none';
+						gameEngineOperation = 1;
+						sendStartGame();
+					}
+				}else {
+					inpBut.style.display = 'none';
+				}
 			}
 		}else {
-			inpBut.style.display = 'none';
+			gameEngineOperation = 1;
+			sendStartGame();
 		}
-	}
-};
+		
+	};
 
-ws.onclose = () => {
-	console.log('status: disconnected');
-	gameEngineOperation = 0;
-};
+	ws.onclose = () => {
+		console.log('status: disconnected');
+		gameEngineOperation = 0;
+		notifications = [];
+		setTimeout(()=>{
+			WSconnect();
+			console.log('try to reconect')
+		},1000)
+	};
 
-ws.onmessage = response => {
-	let res = JSON.parse(response.data);
+	ws.onmessage = response => {
+		let res = JSON.parse(response.data);
 
-	if (res.even == "START") {
-		spawnX = res.spawnX;
-		spawnY = res.spawnY;
-		plats = res.plats;
-		xPos = spawnX;
-		yPos = spawnY;
-		userID = res.id;
-		roundTime = res.roundTime;
-		takeWeapon = res.takeWeapon;
-		console.log("UserID: "+userID);
-		gameСycle();
-		draw();
-		pingChecker();
-		setInterval(pingChecker,1000);
-	}
-
-	if (res.even == "UPDATE") {
-		enemys = res.enemys;
-		// for (var e in enemys) {
-		// 	if (enemys[e].dead != 1) {
-		// 		plats[enemys[e].platsNum] = {
-		// 			x: enemys[e].x,
-		// 			y: enemys[e].y+3,
-		// 			width: 50,
-		// 			height: 100,
-		// 			human: 1
-		// 		}
-		// 	}
-		// }
-		spawnX = res.spawnX;
-		spawnY = res.spawnY;
-		shots = res.shots;
-		guns = res.guns;
-		takeWeapon = res.takeWeapon;
-		dead = res.dead;
-		deadTime = res.deadTime;
-		tempPlats = res.tempPlats;
-		stats = res.stats;
-		for(var i in tempPlats) {
-			var index = tempPlats[i].index;
-			plats[index] = tempPlats[i].info;
+		if (res.even == "START") {
+			spawnX = res.spawnX;
+			spawnY = res.spawnY;
+			plats = res.plats;
+			xPos = spawnX;
+			yPos = spawnY;
+			userID = res.id;
+			roundTime = res.roundTime;
+			takeWeapon = res.takeWeapon;
+			console.log("UserID: "+userID);
+			gameСycle();
+			draw();
+			pingChecker();
+			setInterval(pingChecker,1000);
 		}
-		roundTime = res.roundTime;
-	}
-	if (res.even == "NOTIFICATION") {
-		var notfTimeToDel = roundTime+3000;
-		notifications.push({
-			mes: res.mes,
-			timeToDel: notfTimeToDel
-		})
-	}
-	if (res.even == "SOUNDS") {
-		sounds = res.sounds;
-		for(var s in sounds) {
-			if (sounds[s].for == "all") {
-				if (sounds[s].from == userID) {
-					soundVolume = 1;
-				}else {
-					soundVolume = 0.3;
-				}
-			} else {
-				soundVolume = 1;
+
+		if (res.even == "UPDATE") {
+			enemys = res.enemys;
+			// for (var e in enemys) {
+			// 	if (enemys[e].dead != 1) {
+			// 		plats[enemys[e].platsNum] = {
+			// 			x: enemys[e].x,
+			// 			y: enemys[e].y+3,
+			// 			width: 50,
+			// 			height: 100,
+			// 			human: 1
+			// 		}
+			// 	}
+			// }
+			spawnX = res.spawnX;
+			spawnY = res.spawnY;
+			shots = res.shots;
+			guns = res.guns;
+			takeWeapon = res.takeWeapon;
+			dead = res.dead;
+			deadTime = res.deadTime;
+			tempPlats = res.tempPlats;
+			stats = res.stats;
+			for(var i in tempPlats) {
+				var index = tempPlats[i].index;
+				plats[index] = tempPlats[i].info;
 			}
-			switch (sounds[s].name) {
-				case "shot":
-					var soundItem = new Audio("sounds/shot.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				case "boost":
-					var soundItem = new Audio("sounds/boost.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				case "hit":
-					var soundItem = new Audio("sounds/hit.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				case "dead":
-					var soundItem = new Audio("sounds/dead.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				case "dead":
-					var soundItem = new Audio("sounds/dead.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				case "spawn":
-					var soundItem = new Audio("sounds/spawn.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-				// case "fall":
-				// 	var soundItem = new Audio("sounds/fall.mp3");
-				// 	soundItem.volume = soundVolume;
-				// 	soundItem.autoplay = true;
-				// 	break;
-				case "take":
-					var soundItem = new Audio("sounds/take.mp3");
-					soundItem.volume = soundVolume;
-					soundItem.autoplay = true;
-					break;
-			}	
+			roundTime = res.roundTime;
+		}
+		if (res.even == "NOTIFICATION") {
+			var notfTimeToDel = roundTime+5000;
+			notifications.push({
+				mes: res.mes,
+				from: res.from,
+				timeToDel: notfTimeToDel
+			})
+		}
+		if (res.even == "SOUNDS") {
+			sounds = res.sounds;
+			for(var s in sounds) {
+				if (sounds[s].for == "all") {
+					if (sounds[s].from == userID) {
+						soundVolume = 1;
+					}else {
+						soundVolume = 0.3;
+					}
+				} else {
+					soundVolume = 1;
+				}
+				switch (sounds[s].name) {
+					case "shot":
+						var soundItem = new Audio("sounds/shot.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "shotAwp":
+						var soundItem = new Audio("sounds/shotAwp.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "boost":
+						var soundItem = new Audio("sounds/boost.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "hit":
+						var soundItem = new Audio("sounds/hit.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "dead":
+						var soundItem = new Audio("sounds/dead.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "dead":
+						var soundItem = new Audio("sounds/dead.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "spawn":
+						var soundItem = new Audio("sounds/spawn.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					case "overtime":
+						var soundItem = new Audio("sounds/overtime.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+					// case "fall":
+					// 	if(roundTime - lastFallTime > 300) {
+					// 		var soundItem = new Audio("sounds/fall.mp3");
+					// 		soundItem.volume = soundVolume;
+					// 		soundItem.autoplay = true;
+					// 		lastFallTime = roundTime;
+					// 	}
+					// 	break;
+					case "take":
+						var soundItem = new Audio("sounds/take.mp3");
+						soundItem.volume = soundVolume;
+						soundItem.autoplay = true;
+						break;
+				}	
+			}
 		}
 	}
-}
+}//WSconnect exit
 
-
+WSconnect()
 //запрос на начало игры
 function sendStartGame() {
 	var userInfoStart = {
@@ -1063,7 +1195,8 @@ function sendInfo() {
 			x: xPos,
 			y: yPos,
 			persDir: persDir,
-			reload: reload
+			reload: reload,
+			ping: ping
 		}
 	}
 	ws.send(JSON.stringify(userInfoUpdate));
@@ -1105,25 +1238,32 @@ function sendAnimation(arg1,arg2) {
 //запрос на создание выстрелов
 function sendShotAdd(shotMode) {
 	switch (shotMode) {
-		case "burst":
+		case "m4a4":
 			if (takeWeaponDir == 1) {
 				var shotX = xPos + 55
 			}else {
 				var shotX = xPos - 10
 			}
-			setTimeout(function(){
-				sendShotAdd();
-			},200)
-			setTimeout(function(){
-				sendShotAdd();
-			},400)
+			var bullType = "default"
+			var bullY = yPos+57;
+			break;
+		case "awp":
+			if (takeWeaponDir == 1) {
+				var shotX = xPos + 90
+			}else {
+				var shotX = xPos - 40
+			}
+			var bullType = "through"
+			var bullY = yPos+53;
 			break;
 		default:
 			if (takeWeaponDir == 1) {
-				var shotX = xPos + 55
+				var shotX = xPos + 50
 			}else {
 				var shotX = xPos - 10
 			}
+			var bullType = "default"
+			var bullY = yPos+57;
 			break;
 	}	
 
@@ -1131,8 +1271,9 @@ function sendShotAdd(shotMode) {
 		even: "SHOT_ADD",
 		id: userID,
 		x: shotX,
-		y: yPos+57,
-		dir: takeWeaponDir
+		y: bullY,
+		dir: takeWeaponDir,
+		type: bullType
 	}
 
 	ws.send(JSON.stringify(userInfoShot));	

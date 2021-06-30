@@ -135,6 +135,7 @@
 			border: 2px solid #000;
 			width: 40px;
 			height: 40px; 
+			font-family: 'PressStart2P';
 			font-size: 14px;
 			cursor: pointer;
 			z-index: 1000;
@@ -168,16 +169,55 @@
 		.stats__inner {
 			display: flex;
 			flex-direction: column;
-			width: 400px;
+			width: 600px;
 			max-height: 300px;
-		}
-		.stats__inner p {
-			display: block;
-			margin-top: 10px;
-			margin-bottom: 0px;
-			font-size: 17px;
+			border: 2px solid #fff;
+			font-size: 13px;
 			color: #fff;
 			text-shadow: #000 1px 1px 0px,#000 -1px -1px 0px;
+
+
+
+
+		}
+		.stats__inner tr, .stats__inner td {
+			border: 1px solid #fff;
+		}
+		.stats__inner td {
+			width: 140px;
+			padding: 5px;
+			
+			
+			
+		}
+		#serverNotifications {
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			width: 80%;
+			height: 60%;
+			position: absolute;
+			top: 0px;
+			left: 100px;
+						
+		}
+		#serverNotifications p {
+			text-align: center;
+			color: red;
+			font-size: 15px;
+		}
+		.soundState {
+			display: block;
+			width: 40px;
+			height: 40px;
+			position: absolute;
+			top: 20px;
+			right: 50px;
+			background: url("img/soundState.png");
+			background-size: 100%;
+			border-radius: 50%;
+			border: 2px solid #159F5C; 
+			cursor: pointer;
 		}
 	</style>
 	<section class="game">	
@@ -189,15 +229,34 @@
 				<div id="notificationsLine"></div>
 				<div id="time"></div>
 				<div id="statsTable">
-					<div class="stats__inner">
-					</div>
+					<div class="soundState"></div>
+					<table class="stats__inner">
+						<caption>Статистика</caption>
+						<tr>
+						    <th>nick</th>
+						    <th>kills</th>
+						    <th>deads</th>
+						    <th>ping</th>
+					   </tr>
+					  <tr>
+					    <td>qweqw</td>
+					    <td>(123)</td>
+					    <td>123</td>
+					    <td>1233</td>
+					  </tr>
+					</table>
+				</div>
+				<div id="serverNotifications">
 				</div>
 			</div>
-			<div class="enterNick">
-				<input type="text" class="enterNick_text" autofocus>
-				<div class="enterNick_submit">Go</div>
-			</div>
+			<form class="enterNick">
+				<input type="text" class="enterNick_text" autofocus maxlength="12">
+				<button class="enterNick_submit">Go</button>
+			</form>
 		</div>
+		<audio class="wildbeats" autoplay="autoplay" loop>
+			<source src="sounds/wildbeats.mp3" type="audio/mpeg">
+		</audio>
 	</section>
 	<script type="text/javascript" src="script.js"></script>
 </body>
