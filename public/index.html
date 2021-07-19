@@ -21,6 +21,7 @@
 			margin: 0px;
 			padding: 0px;
 			overflow: hidden;
+			background: #000;
 			font-family: 'PressStart2P';
 			line-height: 12px;
 		}
@@ -45,11 +46,11 @@
 			display: block;
 			width: 900px;
 			height: 500px;
-			margin-top: 200px;
+			margin-top: 215px;
 			overflow: hidden;
-			transform: scale(1.7);
+			transform: scale(1.85);
 			background: #000;
-			border: 2px solid red;
+			/*border: 2px solid red;*/
 			position: relative;
 			z-index: 1000;
 		}
@@ -175,20 +176,26 @@
 			font-size: 13px;
 			color: #fff;
 			text-shadow: #000 1px 1px 0px,#000 -1px -1px 0px;
-
-
-
-
+		}
+		.stats__inner caption {
+			margin: 10px 0px;
 		}
 		.stats__inner tr, .stats__inner td {
 			border: 1px solid #fff;
 		}
 		.stats__inner td {
-			width: 140px;
+			width: 100px;
 			padding: 5px;
-			
-			
-			
+		}
+		.td__nick {
+			width: 300px!important;
+		}
+		.td__num {
+			width: 50px!important;
+		}
+		.table__update tr {
+			display: flex;
+			margin-bottom: 25px;
 		}
 		#serverNotifications {
 			display: flex;
@@ -219,7 +226,128 @@
 			border: 2px solid #159F5C; 
 			cursor: pointer;
 		}
+		.quests {
+			display: block;
+			width: 70%;
+			height: 50px;
+			position: absolute;
+			top: 400px;
+			left: 120px;
+		}
+		.quest__item {
+			color: #FB621F;
+			font-size: 11px;
+			text-align: center;
+			text-shadow: #000 1px 1px 0px,#000 -1px -1px 0px;
+		}
+		/*Preloader*/
+
+		#page-preloader {
+		    position: fixed;
+		    left: 0;
+		    top: 0;
+		    right: 0;
+		    bottom: 0;
+		    background: #000;
+		    z-index: 100500;
+		}
+
+		.spinner {
+		    position: absolute;
+		    left: 50%;
+		    top: 50%;
+		    margin-top: -40px;
+		    margin-left: -40px; 
+		}
+
+		.lds-roller {
+		  display: inline-block;
+		  position: relative;
+		  width: 80px;
+		  height: 80px;
+		}
+		.lds-roller div {
+		  animation: lds-roller 1.2s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+		  transform-origin: 40px 40px;
+		}
+		.lds-roller div:after {
+		  content: " ";
+		  display: block;
+		  position: absolute;
+		  width: 7px;
+		  height: 7px;
+		  border-radius: 50%;
+		  background: #F75D2D;
+		  margin: -4px 0 0 -4px;
+		}
+		.lds-roller div:nth-child(1) {
+		  animation-delay: -0.036s;
+		}
+		.lds-roller div:nth-child(1):after {
+		  top: 63px;
+		  left: 63px;
+		}
+		.lds-roller div:nth-child(2) {
+		  animation-delay: -0.072s;
+		}
+		.lds-roller div:nth-child(2):after {
+		  top: 68px;
+		  left: 56px;
+		}
+		.lds-roller div:nth-child(3) {
+		  animation-delay: -0.108s;
+		}
+		.lds-roller div:nth-child(3):after {
+		  top: 71px;
+		  left: 48px;
+		}
+		.lds-roller div:nth-child(4) {
+		  animation-delay: -0.144s;
+		}
+		.lds-roller div:nth-child(4):after {
+		  top: 72px;
+		  left: 40px;
+		}
+		.lds-roller div:nth-child(5) {
+		  animation-delay: -0.18s;
+		}
+		.lds-roller div:nth-child(5):after {
+		  top: 71px;
+		  left: 32px;
+		}
+		.lds-roller div:nth-child(6) {
+		  animation-delay: -0.216s;
+		}
+		.lds-roller div:nth-child(6):after {
+		  top: 68px;
+		  left: 24px;
+		}
+		.lds-roller div:nth-child(7) {
+		  animation-delay: -0.252s;
+		}
+		.lds-roller div:nth-child(7):after {
+		  top: 63px;
+		  left: 17px;
+		}
+		.lds-roller div:nth-child(8) {
+		  animation-delay: -0.288s;
+		}
+		.lds-roller div:nth-child(8):after {
+		  top: 56px;
+		  left: 12px;
+		}
+		@keyframes lds-roller {
+		  0% {
+		    transform: rotate(0deg);
+		  }
+		  100% {
+		    transform: rotate(360deg);
+		  }
+		}
 	</style>
+	<div id="page-preloader">
+		<div class="lds-roller spinner" ><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+	</div>
 	<section class="game">	
 		<div class="game__view">
 			<canvas id="canvas"></canvas>
@@ -232,22 +360,14 @@
 					<div class="soundState"></div>
 					<table class="stats__inner">
 						<caption>Статистика</caption>
-						<tr>
-						    <th>nick</th>
-						    <th>kills</th>
-						    <th>deads</th>
-						    <th>ping</th>
-					   </tr>
-					  <tr>
-					    <td>qweqw</td>
-					    <td>(123)</td>
-					    <td>123</td>
-					    <td>1233</td>
-					  </tr>
+					  	<tbody class="stats__inner__update">
+					  	</tbody>
 					</table>
+					<div class="quests">
+						
+					</div>
 				</div>
-				<div id="serverNotifications">
-				</div>
+				<div id="serverNotifications"></div>
 			</div>
 			<form class="enterNick">
 				<input type="text" class="enterNick_text" autofocus maxlength="12">

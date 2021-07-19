@@ -18,7 +18,8 @@ var hudPing = document.querySelector("#ping");
 var hudNotfLine = document.querySelector("#notificationsLine");
 var hudTime = document.querySelector("#time");
 var hudStatsTable = document.querySelector("#statsTable");
-var hudStatsInner = document.querySelector(".stats__inner");
+var hudStatsInner = document.querySelector(".stats__inner__update");
+var hudQuests = document.querySelector(".quests");
 var hudServerNotf = document.querySelector("#serverNotifications");
 
 
@@ -93,11 +94,100 @@ anim_boost3.src = "img/models/boost/3.png";
 anim_boost4.src = "img/models/boost/4.png";
 anim_boost5.src = "img/models/boost/5.png";
 
+//текстуры анимации игрока
+var anim_vitia1 = new Image();
+var anim_vitia2 = new Image();
+var anim_vitia3 = new Image();
+var anim_vitia4 = new Image();
+var anim_vitia5 = new Image();
+var anim_vitia6 = new Image();
+var anim_vitia7 = new Image();
+var anim_vitia8 = new Image();
+var anim_vitia9 = new Image();
+var anim_vitia10 = new Image();
+var anim_vitia11 = new Image();
+var anim_vitia12 = new Image();
+var anim_vitia13 = new Image();
+var anim_vitia14 = new Image();
+anim_vitia1.src = "img/models/vitia/1.png";
+anim_vitia2.src = "img/models/vitia/2.png";
+anim_vitia3.src = "img/models/vitia/3.png";
+anim_vitia4.src = "img/models/vitia/4.png";
+anim_vitia5.src = "img/models/vitia/5.png";
+anim_vitia6.src = "img/models/vitia/6.png";
+anim_vitia7.src = "img/models/vitia/7.png";
+anim_vitia8.src = "img/models/vitia/8.png";
+anim_vitia9.src = "img/models/vitia/9.png";
+anim_vitia10.src = "img/models/vitia/10.png";
+anim_vitia11.src = "img/models/vitia/11.png";
+anim_vitia12.src = "img/models/vitia/12.png";
+anim_vitia13.src = "img/models/vitia/13.png";
+anim_vitia14.src = "img/models/vitia/14.png";
 
+var anim_vitia_down = new Image();
+anim_vitia_down.src = "img/models/vitia_jump/down.png";
+
+var anim_vitia_jump1 = new Image();
+var anim_vitia_jump2 = new Image();
+var anim_vitia_jump3 = new Image();
+var anim_vitia_jump4 = new Image();
+var anim_vitia_jump5 = new Image();
+var anim_vitia_jump6 = new Image();
+var anim_vitia_jump7 = new Image();
+var anim_vitia_jump8 = new Image();
+anim_vitia_jump1.src = "img/models/vitia_jump/1.png";
+anim_vitia_jump2.src = "img/models/vitia_jump/2.png";
+anim_vitia_jump3.src = "img/models/vitia_jump/3.png";
+anim_vitia_jump4.src = "img/models/vitia_jump/4.png";
+anim_vitia_jump5.src = "img/models/vitia_jump/5.png";
+anim_vitia_jump6.src = "img/models/vitia_jump/6.png";
+anim_vitia_jump7.src = "img/models/vitia_jump/7.png";
+anim_vitia_jump8.src = "img/models/vitia_jump/8.png";
+
+
+//текстуры анимации противника
+var anim_vitia_red1 = new Image();
+var anim_vitia_red2 = new Image();
+var anim_vitia_red3 = new Image();
+var anim_vitia_red4 = new Image();
+var anim_vitia_red5 = new Image();
+var anim_vitia_red6 = new Image();
+var anim_vitia_red7 = new Image();
+var anim_vitia_red8 = new Image();
+var anim_vitia_red9 = new Image();
+var anim_vitia_red10 = new Image();
+var anim_vitia_red11 = new Image();
+var anim_vitia_red12 = new Image();
+var anim_vitia_red13 = new Image();
+var anim_vitia_red14 = new Image();
+anim_vitia_red1.src = "img/models/vitia_red/1.png";
+anim_vitia_red2.src = "img/models/vitia_red/2.png";
+anim_vitia_red3.src = "img/models/vitia_red/3.png";
+anim_vitia_red4.src = "img/models/vitia_red/4.png";
+anim_vitia_red5.src = "img/models/vitia_red/5.png";
+anim_vitia_red6.src = "img/models/vitia_red/6.png";
+anim_vitia_red7.src = "img/models/vitia_red/7.png";
+anim_vitia_red8.src = "img/models/vitia_red/8.png";
+anim_vitia_red9.src = "img/models/vitia_red/9.png";
+anim_vitia_red10.src = "img/models/vitia_red/10.png";
+anim_vitia_red11.src = "img/models/vitia_red/11.png";
+anim_vitia_red12.src = "img/models/vitia_red/12.png";
+anim_vitia_red13.src = "img/models/vitia_red/13.png";
+anim_vitia_red14.src = "img/models/vitia_red/14.png";
+
+var anim_vitia_red_down = new Image();
+anim_vitia_red_down.src = "img/models/vitia_red/down.png";
+
+
+
+
+var persFrame = 1;
+var persFrameVertical = 1;
 var sounds;
 var gameEngineOperation;
 var ping = null;
 var devMode = 0;
+var continuousKills = 0;
 
 
 //Позиция игрока
@@ -136,13 +226,13 @@ var lastFallTime = 0;
 
 //переменные оружия и предметов
 var takeWeapon = 0;
-var mayTake = 0;
 var takeWeaponDir = 0;
 var reload = 0;
 var take = 0;
 
 //переменные расположения игрока
 var direction = 0;
+var directionVertical = 0;
 var directionKeyDown;
 var jump = 0;
 var barrierLeft = 0;
@@ -339,13 +429,14 @@ function gameСycle() {
 			xPos += moveSpeed;//right
 			takeWeaponDir = 1;
 		}
-		//проверка на удор об потолок
+		//проверка на удар об потолок
 		if(yPos<0) {
 			underPlatform = 1;
 		}
 
 		//движение человека вверх или низ
 		if (jump != 0 && underPlatform == 0) {
+			directionVertical = 1;
 			yPos -= Math.floor(moveSpeed*(jump/10));//up
 			jump --;
 			grav = 9.8;
@@ -355,8 +446,11 @@ function gameСycle() {
 		}else if (onStay == 0){
 			gravOn();
 			jump = 0;
+			directionVertical = 2;
+			persFrameVertical = 1;
 		}
 		if (yPos == canv.height - pep.height) {
+			directionVertical = 0;
 			if(onStay == 0) {
 				onPlatformCorrect = 0;
 			}
@@ -365,6 +459,8 @@ function gameСycle() {
 			}
 			onStay = 1;
 		}else if(yPos > canv.height - pep.height){
+			directionVertical = 0;
+			persFrameVertical = 1;
 			yPos = canv.height - pep.height;
 			if (onStay != 1) {
 				sendSound("fall");
@@ -375,6 +471,8 @@ function gameСycle() {
 			//платформа под ногой
 			if (onPlatformAll == 1) {
 				onStay = 1;	
+				directionVertical = 0;
+				persFrameVertical = 1;
 			}else {
 				onStay = 0;
 				onPlatformNum = null;
@@ -391,7 +489,7 @@ function gameСycle() {
 	
 
 	for (var i in plats) {		
-		if (plats[i] === null) {
+		if (plats[i] === null || plats[i].model == "greenZone") {
 			continue;
 		}
 
@@ -399,18 +497,19 @@ function gameСycle() {
 			//движение вместе с платформой, если мы на ней
 			if (onPlatformNum == i && plats[i].moveObj.moveX != 0) {
 				if (plats[i].moveObj.moveX == 1 && barrierRightAll == 0) {
-					xPos += plats[i].moveObj.speed;
+					xPos += plats[i].moveObj.speed+0.06;
+
 				}
 				if (plats[i].moveObj.moveX == -1 && barrierLeftAll == 0) {
-					xPos -= plats[i].moveObj.speed;
+					xPos -= plats[i].moveObj.speed+0.06;
 				}
 			}
 			if (onPlatformNum == i && plats[i].moveObj.moveY != 0) {
 				if (plats[i].moveObj.moveY == 1) {
-					yPos += plats[i].moveObj.speed;
+					yPos += plats[i].moveObj.speed+0.06;
 				}
 				if (plats[i].moveObj.moveY == -1 && underPlatformAll == 0) {
-					yPos -= plats[i].moveObj.speed;
+					yPos -= plats[i].moveObj.speed+0.06;
 				}
 			}
 		}
@@ -598,6 +697,8 @@ function draw() {
 			}
 			else if(plats[i].toBoost == 1) {
 				ctx.fillStyle = "#BA55D3";
+			}else if(plats[i].model == "greenZone") {
+				ctx.fillStyle = "rgba(5,241,68,.2)";
 			}else {
 				ctx.fillStyle = "#416D71";	
 			}
@@ -683,7 +784,10 @@ function draw() {
 							ctx.drawImage(anim_boost5,plats[i].x,plats[i].y-70,100,90)
 							break;
 					}
-
+					break;
+				case "greenZone":
+					ctx.fillStyle = "rgba(5,241,68,.2)";
+					ctx.fillRect(plats[i].x,plats[i].y,plats[i].width,plats[i].height);
 					break;
 			}
 		}
@@ -700,22 +804,197 @@ function draw() {
 	//отрисовка врагов
 	for (var e in enemys) {
 		if (enemys[e].dead != 1) {
-			if (enemys[e].persDir == 1) {
-				ctx.drawImage(vitia2,enemys[e].x,enemys[e].y);
+			if (enemys[e].directionVertical == 0) {
+				if(enemys[e].direction != 0) {
+					switch (enemys[e].persFrame) {
+						case 1:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red1,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red1,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 2:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red2,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red2,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 3:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red3,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red3,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 4:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red4,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red4,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 5:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red5,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red5,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 6:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red6,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red6,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 7:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red7,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red7,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 8:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red8,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red8,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 9:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red9,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red9,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 10:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red10,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red10,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 11:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red11,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red11,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 12:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red12,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red12,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 13:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red13,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red13,0,0);
+						    	ctx.restore();
+							}
+							break;
+						case 14:
+							if (enemys[e].persDir == 1) {
+								ctx.drawImage(anim_vitia_red14,enemys[e].x,enemys[e].y);
+							} else {
+								ctx.save();
+								ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+						    	ctx.scale(-1,1);
+								ctx.drawImage(anim_vitia_red14,0,0);
+						    	ctx.restore();
+							}
+							break;
+					}
+				}else {
+					if (enemys[e].persDir == 1) {
+						ctx.drawImage(vitia2,enemys[e].x,enemys[e].y);
+					}
+					if (enemys[e].persDir == 0) {
+						ctx.save();
+			   			ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+					    ctx.scale(-1,1);
+			   			ctx.drawImage(vitia2,0,0);
+					    ctx.restore();
+					}
+				}
+			}else {
+				if (enemys[e].persDir == 1) {
+					ctx.drawImage(anim_vitia_red_down,enemys[e].x,enemys[e].y);
+				}
+				if (enemys[e].persDir == 0) {
+					ctx.save();
+		   			ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
+				    ctx.scale(-1,1);
+		   			ctx.drawImage(anim_vitia_red_down,0,0);
+				    ctx.restore();
+				}
 			}
-			if (enemys[e].persDir == 0) {
-				ctx.save();
-	   			ctx.translate(enemys[e].x+pep2.width,enemys[e].y);
-			    ctx.scale(-1,1);
-	   			ctx.drawImage(vitia2,0,0);
-			    ctx.restore();
-			}
+			
+
 			//отрисовка ника врага
 			ctx.fillStyle = "#FA0018";
 			ctx.font = "10px PressStart2P";
 			var tmpNickX = enemys[e].nick;
 			tmpNickX = tmpNickX.length*0.9;
 			ctx.fillText(enemys[e].nick, enemys[e].x-tmpNickX, enemys[e].y-10);
+			//отрисовка оружия врага
 			if(enemys[e].takeWeapon != 0) {
 				if(enemys[e].takeWeapon == "gun") {
 					if (enemys[e].persDir == 1) {
@@ -759,14 +1038,361 @@ function draw() {
 	}
 	//отрисовка игрока
 	if (dead != 1) {
-		if (persDir == 1) {
-			ctx.drawImage(vitia,xPos,yPos);
-		}else if (persDir == 0) {
-			ctx.save();
-			ctx.translate(xPos+pep.width,yPos);
-	    	ctx.scale(-1,1);
-			ctx.drawImage(vitia,0,0);
-	    	ctx.restore();
+		if (directionVertical == 0) {
+			if(direction != 0) {
+				switch (persFrame) {
+					case 1:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia1,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia1,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 2:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia2,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia2,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 3:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia3,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia3,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 4:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia4,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia4,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia5,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia5,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 6:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia6,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia6,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 7:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia7,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia7,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 8:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia8,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia8,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 9:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia9,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia9,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 10:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia10,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia10,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 11:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia11,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia11,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 12:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia12,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia12,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 13:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia13,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia13,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 14:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia14,xPos,yPos);
+						} else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia14,0,0);
+					    	ctx.restore();
+						}
+						break;
+				}
+				if(persFrame != 14) {
+					persFrame++;
+				}else {
+					persFrame = 1;
+				}
+			}else {
+				if (persDir == 1) {
+					ctx.drawImage(vitia,xPos,yPos);
+				}else if (persDir == 0) {
+					ctx.save();
+					ctx.translate(xPos+pep.width,yPos);
+			    	ctx.scale(-1,1);
+					ctx.drawImage(vitia,0,0);
+			    	ctx.restore();
+				}
+			}
+		}else if(directionVertical == 1){
+			switch (persFrameVertical) {
+					case 1:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump1,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump1,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 1.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump1,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump1,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 2:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump2,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump2,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 2.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump2,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump2,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 3:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump3,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump3,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 3.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump3,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump3,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 4:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump4,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump4,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 4.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump4,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump4,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump5,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump5,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 5.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump5,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump5,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 6:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump6,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump6,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 6.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump6,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump6,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 7:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump7,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump7,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 7.5:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump7,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump7,0,0);
+					    	ctx.restore();
+						}
+						break;
+					case 8:
+						if (persDir == 1) {
+							ctx.drawImage(anim_vitia_jump8,xPos,yPos);
+						}else {
+							ctx.save();
+							ctx.translate(xPos+pep.width,yPos);
+					    	ctx.scale(-1,1);
+							ctx.drawImage(anim_vitia_jump8,0,0);
+					    	ctx.restore();
+						}
+						break;
+			}
+			if(persFrameVertical != 8) {
+				persFrameVertical+=0.5;
+			}
+		}else if(directionVertical == 2){
+			if (persDir == 1) {
+					ctx.drawImage(anim_vitia_down,xPos,yPos);
+				}else if (persDir == 0) {
+					ctx.save();
+					ctx.translate(xPos+pep.width,yPos);
+			    	ctx.scale(-1,1);
+					ctx.drawImage(anim_vitia_down,0,0);
+			    	ctx.restore();
+				}
 		}
 		//отрисовка ника игрока
 		ctx.fillStyle = "#157E14";
@@ -775,14 +1401,23 @@ function draw() {
 		ctx.fillText(nick, xPos-tmpNickX, yPos-10);
 		//отрисовка оружия у игрока
 		if (takeWeapon != 0) {
+			if (persFrame == 7 ) {
+				var cwy = -1;
+			}else if (persFrame == 8){
+				var cwy = -2;
+			}else if (persFrame == 9){
+				var cwy = -1;
+			}else {
+				var cwy = 0;
+			}
 			switch (takeWeapon) {
 				case "gun":
 					if (persDir == 1) {
-						ctx.drawImage(gun,xPos-10,yPos+55);
+						ctx.drawImage(gun,xPos-10,yPos+55+cwy);
 					}
 					if (persDir == 0) {
 						ctx.save();
-			   			ctx.translate(xPos-10+gun.width,yPos+55);
+			   			ctx.translate(xPos-10+gun.width,yPos+55+cwy);
 					    ctx.scale(-1,1);
 			   			ctx.drawImage(gun,0,0);
 					    ctx.restore();
@@ -790,11 +1425,11 @@ function draw() {
 					break;
 				case "m4a4":
 					if (persDir == 1) {
-						ctx.drawImage(m4a4,xPos-10,yPos+50);
+						ctx.drawImage(m4a4,xPos-10,yPos+50+cwy);
 					}
 					if (persDir == 0) {
 						ctx.save();
-			   			ctx.translate(xPos-10+m4a4.width,yPos+50);
+			   			ctx.translate(xPos-10+m4a4.width,yPos+50+cwy);
 					    ctx.scale(-1,1);
 			   			ctx.drawImage(m4a4,0,0);
 					    ctx.restore();
@@ -802,11 +1437,11 @@ function draw() {
 					break;
 				case "awp":
 					if (persDir == 1) {
-						ctx.drawImage(awp,xPos-20,yPos+43);
+						ctx.drawImage(awp,xPos-20,yPos+43+cwy);
 					}
 					if (persDir == 0) {
 						ctx.save();
-			   			ctx.translate(xPos-47+awp.width,yPos+43);
+			   			ctx.translate(xPos-47+awp.width,yPos+43+cwy);
 					    ctx.scale(-1,1);
 			   			ctx.drawImage(awp,0,0);
 					    ctx.restore();
@@ -820,7 +1455,6 @@ function draw() {
 		if (guns[k] == null) {
 			continue;
 		}
-		mayTake = 0
 		if (guns[k].takes != 1) {
 			switch (guns[k].name) {
 				case "gun":
@@ -831,12 +1465,11 @@ function draw() {
 					break;
 				case "awp":
 					ctx.drawImage(awp,guns[k].x,guns[k].y);
-								//текст над авиком
-								ctx.font = "8px PressStart2P";
-								
-								ctx.fillStyle = "#FB6523";
-								ctx.fillText("Я знаю ты хочешь меня",guns[k].x-20, guns[k].y-5);
-
+									//текст над авиком
+									ctx.font = "8px PressStart2P";
+									
+									ctx.fillStyle = "#FB6523";
+									ctx.fillText("Я знаю ты хочешь меня",guns[k].x-20, guns[k].y-5);
 					break;
 			}
 			var gx = 1;
@@ -855,7 +1488,16 @@ function draw() {
 				{
 					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
 					if (take == 1) {
+						take = 0;
 						sendTake(takeWeapon,k);
+						break;
+					}
+				}else if (continuousKills > 4 && takeWeapon != "awp") {
+					//отрисовка возможности взять авик
+					ctx.drawImage(prompt,xPos+pep.width+20,yPos-60);
+					if (take == 1) {
+						take = 0;
+						sendTake(takeWeapon,2);
 						break;
 					}
 				}
@@ -929,13 +1571,18 @@ function draw() {
 		yPos = spawnY; 
 	}
 
-	// //вывод игровой статистики
-	// hudStatsInner.innerHTML = "";
-	// for(var t in stats) {
-	// 	var numT = Number(t)+1;
-	// 	hudStatsInner.innerHTML += "<p>"+"#"+numT+" "+stats[t].nick+"-"+stats[t].kills+"-"+stats[t].deads+"---------ping: "+stats[t].ping+"</p>";
-	// }
+	//вывод игровой статистики
+	hudStatsInner.innerHTML = "";
+	hudStatsInner.innerHTML += "<tr> <th>Num</th><th>Nick</th><th>Kills</th><th>Deads</th><th>Ping</th> </tr>";
+	for(var t in stats) {
+		var numT = Number(t)+1;
+		hudStatsInner.innerHTML += "<tr> <td class='td__num'>"+"#"+numT+"</td><td class='td__nick'>"+stats[t].nick+"</td><td>"+stats[t].kills+"</td><td>"+stats[t].deads+"</td><td>"+stats[t].ping+"</td> </tr>";
+	}
 
+	//отрисовка квестов
+	hudQuests.innerHTML = "";
+	hudQuests.innerHTML += "<p/ class='quest__item'>Сделай ещё "+(5-continuousKills)+" килов, не умирая, что бы получить AWP</p>";
+	//отрисовка временя раунда
 	var roundTimeStamp = new Date(roundTime);
 	if (roundTimeStamp.getSeconds() < 10) {
 		var roundTimeStampMinutesTmp = "0"+roundTimeStamp.getSeconds();
@@ -1087,6 +1734,7 @@ function WSconnect() {
 			guns = res.guns;
 			takeWeapon = res.takeWeapon;
 			dead = res.dead;
+			continuousKills = res.continuousKills;
 			deadTime = res.deadTime;
 			tempPlats = res.tempPlats;
 			stats = res.stats;
@@ -1103,6 +1751,10 @@ function WSconnect() {
 				from: res.from,
 				timeToDel: notfTimeToDel
 			})
+		}
+		if (res.even == "CORD") {
+			xPos = res.x;
+			yPos = res.y;
 		}
 		if (res.even == "SOUNDS") {
 			sounds = res.sounds;
@@ -1195,6 +1847,9 @@ function sendInfo() {
 			x: xPos,
 			y: yPos,
 			persDir: persDir,
+			direction: direction,
+			directionVertical: directionVertical,
+			persFrame: persFrame,
 			reload: reload,
 			ping: ping
 		}
@@ -1278,5 +1933,42 @@ function sendShotAdd(shotMode) {
 
 	ws.send(JSON.stringify(userInfoShot));	
 }
+
+window.onload = function () {
+	//Preloader
+    var preloader = document.querySelector("#page-preloader");
+	setTimeout(()=>{
+		preloader.style.opacity = "0.9";
+	},20)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.8";
+	},40)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.7";
+	},60)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.6";
+	},80)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.5";
+	},100)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.4";
+	},120)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.3";
+	},140)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.2";
+	},160)
+	setTimeout(()=>{
+		preloader.style.opacity = "0.1";
+	},180)
+	setTimeout(()=>{
+		preloader.style.opacity = "0";
+	},200)
+    
+}
+
 
 

@@ -59,6 +59,7 @@ server.listen(PORT, ()=>{
 	var players = []
 	var guns = []
 	var plats = []
+	var tempPlats = []
 	var shots = []
 	var sounds = []
 	var stats = []
@@ -78,11 +79,11 @@ function gameData() {
 		spawnPickPoint = 1;
 		spawns[1] = {
 			x: 1300,
-			y: 980
+			y: 1000
 		}
 		spawns[2] = {
 			x: 1800,
-			y: 980
+			y: 1000
 		}
 		spawns[3] = {
 			x: 1800,
@@ -164,7 +165,7 @@ function gameData() {
 				goToX: 0,
 				moveY: 1,
 				goFromY: 980,
-				goToY: 1200,
+				goToY: 1150,
 			}
 		}
 		plats[5] = {
@@ -241,7 +242,7 @@ function gameData() {
 			model: "box2"
 		}
 		plats[15] = {
-			x: 1400,
+			x: 1420,
 			y: 590,
 			width: 80,
 			height: 70,
@@ -259,7 +260,7 @@ function gameData() {
 
 		}
 		plats[17] = {
-			x: 1680,
+			x: 1670,
 			y: 590,
 			width: 80,
 			height: 70,
@@ -391,6 +392,13 @@ function gameData() {
 				goToY: 0,
 			}
 		}
+		plats[31] = {
+			x: 1250,
+			y: 680,
+			width: 600,
+			height: 450,
+			model: "greenZone"
+		}
 
 
 
@@ -446,8 +454,13 @@ function serverMoves() {
 		return
 	}
 	if (roundTime == 590000) {
-		var notfMes = "Сервер будет перезапущен через 10 секунд"
-		notification(notfMes,"server")
+		notification("Сервер будет перезапущен через 10 секунд","server")
+		setTimeout(()=>{
+			if(stats[0].nick) {
+				var ntf = "Победителем раунда стал "+stats[0].nick+" набив "+stats[0].kills+" килов"
+				notification(ntf,"server")
+			}
+		},6000)
 		sounds.push({
 			name: "overtime",
 			for: "all"
@@ -500,6 +513,18 @@ function serverMoves() {
 				for: "all"
 			})
 		},8000)
+		setTimeout(()=>{
+			sounds.push({
+				name: "overtime",
+				for: "all"
+			})
+		},9000)
+		setTimeout(()=>{
+			sounds.push({
+				name: "overtime",
+				for: "all"
+			})
+		},10000)
 	}
 	//удвление afk пользователей
 	// for (var p in players) {
@@ -508,6 +533,74 @@ function serverMoves() {
 	// 		continue
 	// 	}
 	// }
+
+	//проверка на уничтожение пуль
+	for (var s in shots) {
+		//проверка на уничтожение пуль за полем
+		if (shots[s].x < 3 || shots[s].x > canv.width) {
+			shots.splice(s,1)	
+			continue
+		}
+		switch (shots[s].type) {
+			case "default":
+				//проверка на уничтожение пуль в платформе
+				for (var i in plats) {
+					if (shots[s].x+5 < plats[i].x+plats[i].width
+						&& shots[s].x+5 > plats[i].x
+						&& shots[s].y+2 < plats[i].y+plats[i].height
+						&& shots[s].y+2 > plats[i].y
+						&& plats[i].human != 1) 
+					{
+						shots.splice(s,1)
+						break
+					}
+				}
+				break
+			case "through":
+				
+				break
+		}
+		
+	}
+	//проверка на смерть от пули
+	for (var s in shots) { 
+		for(var p in players) {
+			if (shots[s].x+5 < players[p].x+50
+			&& shots[s].x+5 > players[p].x
+			&& shots[s].y+2 < players[p].y+100
+			&& shots[s].y+2 > players[p].y
+			&& shots[s].id != players[p].id
+			&& players[p].dead == 0) 
+			{	
+				var killerID = shots[s].id
+				var murderID = p
+				switch (shots[s].type) {
+					case "default":
+						shots.splice(s,1)
+						break
+					case "through":
+		
+						break
+				}
+				players[killerID].kills++;
+				players[killerID].continuousKills++;
+				//звук для киллера
+				sounds.push({
+					name: "hit",
+					for: killerID
+				})
+				//звук для жертвы
+				sounds.push({
+					name: "dead",
+					for: murderID
+				})
+				var notfMes = players[killerID].nick+" убил "+players[murderID].nick
+				notification(notfMes,"user")
+				respawnPlayer(murderID,5000)
+				break
+			}
+		}
+	}
 	//движение пуль
 	for (var s in shots) { 
 		if (shots[s].dir == 1) {
@@ -516,6 +609,7 @@ function serverMoves() {
 			shots[s].x = shots[s].x - shotSpeed;
 		}
 	}
+	tempPlats = []
 	//движение платформ
 	for (var i in plats) {
 		if (plats[i].unStatic == 1 && plats[i].moveObj.moveX != 0) {
@@ -546,6 +640,13 @@ function serverMoves() {
 				plats[i].moveObj.moveY = 1;
 			}
 		}
+		//добовление обновляемых платформ во временный массив
+		if(plats[i].updated == 1) {
+			tempPlats.push({
+				index: i,
+				info: plats[i]
+			})
+		}
 	}
 	stats = []
 	for (var p in players) {
@@ -558,6 +659,9 @@ function serverMoves() {
 				deads: players[p].deads,
 				ping: players[p].ping
 			})
+		}else {
+			players[p].x = 0
+			players[p].y = 0
 		}	
 	}
 	function sortByKills(arr) {
@@ -645,11 +749,10 @@ function boostAnimation(i) {
 
 function respawnPlayer(index,time) {
 	players[index].deadTime = roundTime
-	players[index].dead = 1;
-	players[index].deads += 1;
+	players[index].dead = 1
+	players[index].deads += 1
+	players[index].continuousKills = 0
 	spawnPick()
-	players[index].spawnX = spawns[spawnPickPoint].x
-	players[index].spawnY = spawns[spawnPickPoint].y
 	socketServer.clients.forEach(client => {
 		if (client.readyState === WebSocket.OPEN) {
 			if (client.onclient == players[index].id) {
@@ -662,6 +765,12 @@ function respawnPlayer(index,time) {
 						for: players[index].id
 					})
 				},time)
+				userInfoMes = {
+					even: "CORD",
+					x: spawns[spawnPickPoint].x,
+					y: spawns[spawnPickPoint].y
+				}
+				client.send(JSON.stringify(userInfoMes))
 			}
 		}
 	})
@@ -688,8 +797,6 @@ function spawnPick() {
 	}
 }
 
-var startConnection
-var requestConnection
 var socketServer
 
 AddsocketServer()
@@ -699,19 +806,15 @@ function AddsocketServer() {
 	console.log(chalk.bgGreen("WebSocket server has been started on "+PORT+"..."))
 
 	socketServer.on('connection', ws => {
-		startConnection = new Date()
 		ws.on('message', message => {
 			let userInfoReq = JSON.parse(message)
 			let userInfo
 			let abort = false
 
 			switch (userInfoReq.even) {
-				case "START":
-					requestConnection = new Date()
-					ms = requestConnection.valueOf() - startConnection.valueOf();
-					
+				case "START":			
 					playersCount++;
-					console.log(chalk.cyan("User id: "+playersCount+" connected to SocetServer..."+" ---Connection ping: "+ms))
+					console.log(chalk.cyan("User id: "+playersCount+" connected to SocetServer..."))
 					spawnPick()
 					players[playersCount] = {
 						id: playersCount,
@@ -722,10 +825,14 @@ function AddsocketServer() {
 						spawnY: spawns[spawnPickPoint].y,
 						platsNum: plats.length+1,
 						persDir: 0,
+						direction: 0,
+						directionVertical: 0,
+						persFrame: 1,
 						dead: 0,
 						deads: 0,
 						deadTime: 0,
 						kills: 0,
+						continuousKills: 0,
 						takeWeapon: "gun",
 						reload: 0,
 						ping: 0,
@@ -821,6 +928,9 @@ function AddsocketServer() {
 							players[u].x = userInfoReq.vars.x
 							players[u].y = userInfoReq.vars.y
 							players[u].persDir = userInfoReq.vars.persDir
+							players[u].direction = userInfoReq.vars.direction
+							players[u].directionVertical = userInfoReq.vars.directionVertical
+							players[u].persFrame = userInfoReq.vars.persFrame
 							players[u].reload = userInfoReq.vars.reload
 							players[u].ping = userInfoReq.vars.ping
 							players[u].connectionTime = roundTime
@@ -833,6 +943,9 @@ function AddsocketServer() {
 								y: players[u].y,
 								nick: players[u].nick,
 								persDir: players[u].persDir,
+								direction: players[u].direction,
+								directionVertical: players[u].directionVertical,
+								persFrame: players[u].persFrame,
 								platsNum: players[u].platsNum,
 								dead: players[u].dead,
 								takeWeapon: players[u].takeWeapon,
@@ -840,75 +953,6 @@ function AddsocketServer() {
 							})
 						}
 					}
-					//проверка на смерть от пули
-					for (var s in shots) { 
-						for(var p in players) {
-							if (shots[s].x+5 < players[p].x+50
-							&& shots[s].x+5 > players[p].x
-							&& shots[s].y+2 < players[p].y+100
-							&& shots[s].y+2 > players[p].y
-							&& shots[s].id != players[p].id
-							&& players[p].dead == 0) 
-							{	
-								var killerID = shots[s].id
-								var murderID = p
-								switch (shots[s].type) {
-									case "default":
-										shots.splice(s,1)
-										break
-									case "through":
-						
-										break
-								}
-								players[killerID].kills++;
-								//звук для киллера
-								sounds.push({
-									name: "hit",
-									for: killerID
-								})
-								//звук для жертвы
-								sounds.push({
-									name: "dead",
-									for: murderID
-								})
-								var notfMes = players[killerID].nick+" убил "+players[murderID].nick
-								notification(notfMes,"user")
-								respawnPlayer(murderID,5000)
-								break
-							}
-						}
-						
-					
-						
-					}
-					for (var s in shots) {
-						//проверка на уничтожение пуль за полем
-						if (shots[s].x < 3 || shots[s].x > canv.width) {
-							shots.splice(s,1)	
-							continue
-						}
-						switch (shots[s].type) {
-							case "default":
-								//проверка на уничтожение пуль в платформе
-								for (var i in plats) {
-									if (shots[s].x+5 < plats[i].x+plats[i].width
-										&& shots[s].x+5 > plats[i].x
-										&& shots[s].y+2 < plats[i].y+plats[i].height
-										&& shots[s].y+2 > plats[i].y
-										&& plats[i].human != 1) 
-									{
-										shots.splice(s,1)
-										break
-									}
-								}
-								break
-							case "through":
-								
-								break
-						}
-						
-					}
-					var tempPlats = []
 					for (var i in plats) {
 						//проверка смерть в лаве
 						if(plats[i].toDie == 1 && players[userInfoReq.id].dead != 1) {
@@ -936,16 +980,8 @@ function AddsocketServer() {
 								})
 							}
 						}
-						//добовление обновляемых платформ во временный массив
-						if(plats[i].updated == 1) {
-							tempPlats.push({
-								index: i,
-								info: plats[i]
-							})
-						}
+						
 					}
-					
-					
 					userInfo = {
 						even: "UPDATE",
 						id: userInfoReq.id,
@@ -959,6 +995,7 @@ function AddsocketServer() {
 						shots: shots,
 						tempPlats: tempPlats,
 						kills: players[userInfoReq.id].kills,
+						continuousKills: players[userInfoReq.id].continuousKills,
 						roundTime: roundTime,
 						stats: stats
 					}
