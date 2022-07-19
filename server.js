@@ -3,14 +3,15 @@ const http = require('http')
 const fs = require('fs')
 const path = require('path')
 const WebSocket = require('ws')
+const url = require('url');
 
 const server = http.createServer( (req, res) => {
 
 	
 	if(req.method == "GET") {
-		let filePath = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url)
+		let filePathPublic = path.join(__dirname, 'public', req.url === '/' ? 'index.html' : req.url)
 	
-		fs.readFile(filePath, (err, content) => {
+		fs.readFile(filePathPublic, (err, content) => {
 			if(err) {
 				fs.readFile(path.join(__dirname, 'public', 'error.html'), (err, data) => {
 					if (err) {
@@ -35,6 +36,47 @@ const server = http.createServer( (req, res) => {
 		if (req.url == "/pingChecker") {
 			res.end()
 		}
+
+		if (req.url == "/saveMap") {
+			let body = ""
+			req.on("data", chunk => {
+				body += chunk.toString()
+			})
+			req.on("end", () => {
+				var mapName = (JSON.parse(body)).mapName + ".txt"
+				let filePathNewMap = path.join(__dirname,'public','mapEdder','maps',mapName)
+
+				fs.writeFile(filePathNewMap,body,err => {
+					if(err) {
+						throw err
+					}
+				})
+				res.end("Файл "+mapName+" создан")
+			})
+			
+		}
+		if (req.url == "/openMap") {
+			let body = ""
+			req.on("data", chunk => {
+				body += chunk.toString()
+			})
+			req.on("end", () => {
+				var mapName = body + ".txt"
+				let filePathOpenMap = path.join(__dirname,'public','mapEdder','maps',mapName)
+				fs.readFile(filePathOpenMap,'utf-8',(err,content)=>{
+					res.end(content)
+				})
+			})
+		}
+		if (req.url == "/getNames") {
+			let filePathMaps = path.join(__dirname,'public','mapEdder','maps')
+			fs.readdir(filePathMaps,(err,mapsNames)=>{
+				var mapsNamesInfo = {
+					mapsNames: mapsNames
+				}
+				res.end(JSON.stringify(mapsNamesInfo))
+			})
+		}
 	}
 
 	
@@ -53,7 +95,8 @@ server.listen(PORT, ()=>{
 
 //gameData --------------------------------------------
 	var spawns = []
-	var spawnPickPoint = 1;
+	var rooms = []
+	var spawnPickPoint = 0;
 	
 	var playersCount = 0
 	var players = []
@@ -75,365 +118,47 @@ server.listen(PORT, ()=>{
 
 function gameData() {
 	{
-		spawns = []
-		spawnPickPoint = 1;
-		spawns[1] = {
-			x: 1300,
-			y: 1000
-		}
-		spawns[2] = {
-			x: 1800,
-			y: 1000
-		}
-		spawns[3] = {
-			x: 1800,
-			y: 750
-		}
-		spawns[4] = {
-			x: 1300,
-			y: 750
-		}
-		spawns[5] = {
-			x: 1500,
-			y: 850
-		}
+		spawnPickPoint = 0;
 		playersCount = 0
 		players = []
-		guns = []
-		plats = []
 		shots = []
 		sounds = []
 		stats = []
+		rooms = [
+			{
+				x: 1200,
+				y: 680,
+				width: 800,
+				height: 450
+			}
+		]
 		roundTime = 0
-		canv = {
-			width: 2100,
-			height:  1100
-		};
 
 
-		//физические константы
-		moveSpeed = 5;
-		grav = 5;
-		shotSpeed = 8;
-
-
-		//создание платформ
-		plats[0] = {
-			x: 1000,
-			y: 1080,
-			width: 100,
-			height: 20,
-			model: "boost",
-			updated: 1,
-			frame: 1,
-			toBoost: 1
-		}
-		plats[1] = {
-			x: 0,
-			y: 980,
-			width: 480,
-			height: 20,
-			model: "plats"
-		}
-		plats[2] = {
-			x: 480,
-			y: 980,
-			width: 100,
-			height: 20,
-			model: "plats"
-		}
-		plats[3] = {
-			x: 0,
-			y: 820,
-			width: 200,
-			height: 20,
-			model: "plats"
-		}
-		plats[4] = {
-			x: 580,
-			y: 970,
-			width: 20,
-			height: 120,
-			updated: 1,
-			model: "plats",
-			updated: 1,
-			unStatic: 1,
-			moveObj: {
-				speed: 0.5,
-				moveX: 0,
-				goFromX: 0,
-				goToX: 0,
-				moveY: 1,
-				goFromY: 980,
-				goToY: 1150,
+		var initMapName = "down_town.txt"
+		let filePathInitMap = path.join(__dirname,'public','mapEdder','maps',initMapName)
+		fs.readFile(filePathInitMap,'utf-8',(err,content)=>{
+			if(err) {
+				throw err
 			}
-		}
-		plats[5] = {
-			x: 0,
-			y: 800,
-			width: 100,
-			height: 20,
-			model: "boost",
-			updated: 1,
-			frame: 1,
-			toBoost: 1
-		}
-		plats[6] = {
-			x: 330,
-			y: 740,
-			width: 590,
-			height: 20,
-			model: "plats"
-		}
-		plats[7] = {
-			x: 180,
-			y: 840,
-			width: 20,
-			height: 140,
-			model: "plats"
-		}
-		plats[8] = {
-			x: 200,
-			y: 900,
-			width: 100,
-			height: 80,
-			model: "box2"
-		}
-		plats[9] = {
-			x: 600,
-			y: 420,
-			width: 20,
-			height: 100,
-			model: "plats"
-		}
-		plats[10] = {
-			x: 1200,
-			y: 660,
-			width: 820,
-			height: 20,
-			model: "plats"
-		}
-		plats[11] = {
-			x: 100,
-			y: 420,
-			width: 200,
-			height: 20,
-			model: "plats"
-		}
-		plats[12] = {
-			x: 300,
-			y: 420,
-			width: 1050,
-			height: 20,
-			model: "plats"
-		}
-		plats[13] = {
-			x: 1800,
-			y: 420,
-			width: 400,
-			height: 20,
-			model: "plats"
-		}
-		plats[14] = {
-			x: 1500,
-			y: 470,
-			width: 170,
-			height: 190,
-			model: "box2"
-		}
-		plats[15] = {
-			x: 1420,
-			y: 590,
-			width: 80,
-			height: 70,
-			model: "box1"
-		}
-		plats[16] = {
-			x: 2000,
-			y: 1080,
-			width: 100,
-			height: 20,
-			model: "boost",
-			updated: 1,
-			frame: 1,
-			toBoost: 1
-
-		}
-		plats[17] = {
-			x: 1670,
-			y: 590,
-			width: 80,
-			height: 70,
-			model: "box4"
-		}
-		plats[18] = {
-			x: 600,
-			y: 640,
-			width: 20,
-			height: 100,
-			model: "plats"
-		}
-		plats[19] = {
-			x: 300,
-			y: 320,
-			width: 20,
-			height: 100,
-			model: "plats"
-		}
-		plats[20] = {
-			x: 1150,
-			y: 320,
-			width: 20,
-			height: 100,
-			model: "plats"
-		}
-		plats[21] = {
-			x: 320,
-			y: 340,
-			width: 830,
-			height: 80,
-			model: "acid",
-			toDie: 1
-		}
-		plats[22] = {
-			x: 400,
-			y: 300,
-			width: 50,
-			height: 20,
-			model: "plats",
-			updated: 1,
-			unStatic: 1,
-			moveObj: {
-				speed: 0.5,
-				moveX: 1,
-				goFromX: 400,
-				goToX: 1000,
-				moveY: 0,
-				goFromY: 0,
-				goToY: 0,
+			var mapContent = JSON.parse(content)
+			canv = {
+				width: mapContent.canvas.width,
+				height:  mapContent.canvas.height
 			}
-		}
-		plats[23] = {
-			x: 1250,
-			y: 850,
-			width: 100,
-			height: 20,
-			model: "plats"
-		}
-		plats[24] = {
-			x: 1750,
-			y: 850,
-			width: 100,
-			height: 20,
-			model: "plats"
-		}
-		plats[25] = {
-			x: 1500,
-			y: 950,
-			width: 100,
-			height: 20,
-			model: "plats"
-		}
-		plats[26] = {
-			x: 25,
-			y: 1000,
-			width: 10,
-			height: 100,
-			toPort: 1,
-			portObj: {
-				portToX: 2000,
-				portToY: 319
-			},
-			model: "portal",
-			frameTime: 1
-		}
-		plats[27] = {
-			x: 2065,
-			y: 320,
-			width: 10,
-			height: 100,
-			toPort: 1,
-			portObj: {
-				portToX: 40,
-				portToY: 1000
-			},
-			model: "portal",
-			frameTime: 1
-		}
-		plats[28] = {
-			x: 550,
-			y: 690,
-			width: 50,
-			height: 50,
-			model: "box3"
-		}
-		plats[29] = {
-			x: 620,
-			y: 700,
-			width: 40,
-			height: 40,
-			model: "box4"
-		}
-		plats[30] = {
-			x: 1600,
-			y: -220,
-			width: 20,
-			height: 470,
-			model: "plats",
-			updated: 1,
-			unStatic: 1,
-			moveObj: {
-				speed: 1,
-				moveX: 0,
-				goFromX: 0,
-				goToX: 0,
-				moveY: 1,
-				goFromY: -220,
-				goToY: 0,
-			}
-		}
-		plats[31] = {
-			x: 1250,
-			y: 680,
-			width: 600,
-			height: 450,
-			model: "greenZone"
-		}
+			spawns = mapContent.spawns
+			plats = mapContent.plats
+			guns = mapContent.guns
+		})
 
-
-
-
-
-
-		//создание лежащего оружия
-		// guns[0] = {
-		// 	x: 100,
-		// 	y: 570,
-		// 	width: 70,
-		// 	height: 17,
-		// 	name: "gun",
-		// 	takes: 0
-		// }
-
-		guns[1] = {
-			x: 700,
-			y: 250,
-			width: 70,
-			height: 27,
-			name: "m4a4",
-			takes: 2
-		}
-		guns[2] = {
-			x: 30,
-			y: 900,
-			width: 115,
-			height: 27,
-			name: "awp",
-			takes: 2
-		}
 	}
 }
 gameData()
+
+
+
+
+
 
 var maneInterval
 
@@ -456,7 +181,7 @@ function serverMoves() {
 	if (roundTime == 590000) {
 		notification("Сервер будет перезапущен через 10 секунд","server")
 		setTimeout(()=>{
-			if(stats[0].nick) {
+			if(players.length > 0) {
 				var ntf = "Победителем раунда стал "+stats[0].nick+" набив "+stats[0].kills+" килов"
 				notification(ntf,"server")
 			}
@@ -550,8 +275,24 @@ function serverMoves() {
 						&& shots[s].y+2 < plats[i].y+plats[i].height
 						&& shots[s].y+2 > plats[i].y
 						&& plats[i].human != 1) 
-					{
-						shots.splice(s,1)
+					{	
+						if (plats[i].model == "ramp") {
+							var rampRate = plats[i].height/plats[i].width
+							if(plats[i].rampDir == 1) {
+								var rampDist = shots[s].x-plats[i].x;
+								if (shots[s].y+5>=(plats[i].y+plats[i].height)-(rampDist*rampRate)) {
+									shots.splice(s,1)
+								}
+							}else {
+								var rampDist = plats[i].x+plats[i].width-shots[s].x
+								if (shots[s].y+5>=(plats[i].y+plats[i].height)-(rampDist*rampRate)) {
+									shots.splice(s,1)
+								}
+							}
+						}else {
+							shots.splice(s,1)
+							
+						}
 						break
 					}
 				}
@@ -614,12 +355,12 @@ function serverMoves() {
 	for (var i in plats) {
 		if (plats[i].unStatic == 1 && plats[i].moveObj.moveX != 0) {
 			if (plats[i].x != plats[i].moveObj.goToX && plats[i].moveObj.moveX == 1) {
-				plats[i].x += plats[i].moveObj.speed;
+				plats[i].x += plats[i].moveObj.speedX;
 			}
 			if (plats[i].x != plats[i].moveObj.goFromX && plats[i].moveObj.moveX == -1) {
-				plats[i].x -= plats[i].moveObj.speed;
+				plats[i].x -= plats[i].moveObj.speedX;
 			}
-			if (plats[i].x == plats[i].moveObj.goToX) {
+			if (plats[i].x >= plats[i].moveObj.goToX) {
 				plats[i].moveObj.moveX = -1;
 			}
 			if (plats[i].x == plats[i].moveObj.goFromX) {
@@ -627,11 +368,13 @@ function serverMoves() {
 			}
 		}
 		if (plats[i].unStatic == 1 && plats[i].moveObj.moveY != 0) {
-			if (plats[i].y != plats[i].moveObj.goToY && plats[i].moveObj.moveY == 1) {
-				plats[i].y += plats[i].moveObj.speed;
-			}
-			if (plats[i].y != plats[i].moveObj.goFromY && plats[i].moveObj.moveY == -1) {
-				plats[i].y -= plats[i].moveObj.speed;
+			if (plats[i].moveObj.moveY == 1) {
+				plats[i].y += plats[i].moveObj.speedY;
+				plats[i].y = Math.round(plats[i].y*10)/10
+
+			}else {
+				plats[i].y -= plats[i].moveObj.speedY;
+				plats[i].y = Math.round(plats[i].y*10)/10
 			}
 			if (plats[i].y == plats[i].moveObj.goToY) {
 				plats[i].moveObj.moveY = -1;
@@ -757,13 +500,15 @@ function respawnPlayer(index,time) {
 		if (client.readyState === WebSocket.OPEN) {
 			if (client.onclient == players[index].id) {
 				setTimeout(()=>{
-					players[index].dead = 0
-					players[index].takeWeapon = "gun"
+					if(players[index].dead == 1) {
+						players[index].dead = 0
+						players[index].takeWeapon = "gun"
 
-					sounds.push({
-						name: "spawn",
-						for: players[index].id
-					})
+						sounds.push({
+							name: "spawn",
+							for: players[index].id
+						})
+					}
 				},time)
 				userInfoMes = {
 					even: "CORD",
@@ -790,8 +535,8 @@ function notification(mes,from) {
 }
 
 function spawnPick() {
-	if (spawnPickPoint == 5) {
-		spawnPickPoint = 1
+	if (spawnPickPoint == spawns.length-1) {
+		spawnPickPoint = 0
 	}else {
 		spawnPickPoint ++
 	}
@@ -847,7 +592,11 @@ function AddsocketServer() {
 						spawnY: players[playersCount].spawnY,
 						connTime: players[playersCount].connTime,
 						roundTime: roundTime,
-						takeWeapon: players[playersCount].takeWeapon
+						takeWeapon: players[playersCount].takeWeapon,
+						canv: {
+							width: canv.width,
+							height: canv.height
+						}
 					}
 					socketServer.clients.forEach(client => {
 						if(client.onclient == undefined) {

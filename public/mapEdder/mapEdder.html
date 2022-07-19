@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Map-Edder</title>
+</head>
+<body>
+	<style type="text/css">
+		body {
+			padding: 0px;
+			margin: 0px;
+			overflow: hidden;
+		}
+		div, p, form, input, a, span, button, textarea  {
+			box-sizing: border-box;
+			margin: 0px;
+			padding: 0px;
+		}
+
+		section {
+			display: flex;
+			padding-top: 90px;
+		}
+		.tools {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			width: 200px;
+			height: 800px;
+			border: 2px solid red;
+			margin-left: 20px;
+		}
+		.toolbar {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			
+			width: 200px;
+			height: 400px;
+			border: 2px solid black;
+			overflow-y: scroll;
+			
+		}
+		.toolbar__title {
+			display: block;
+			width: 100%;
+			text-align: center;
+			margin: 0px;
+			padding-bottom: 10px;
+			border-bottom: 2px solid black;
+
+		}
+		.tool__item {
+			display: block;
+			flex-shrink: 0;
+			border: 1px solid #000;
+			text-align: center;
+			margin-top: 10px;
+		} 
+		#plat {
+			width: 100px;
+			height: 20px;
+			background: #436D70;
+		}
+		#platMove {
+			width: 100px;
+			height: 20px;
+			background: #436D70;
+		}
+		#boost {
+			width: 100px;
+			height: 20px;
+			background: #BA55D3;
+		}
+		#acid {
+			width: 100px;
+			height: 20px;
+			background: #00FF00;
+		}
+		#portal {
+			width: 10px;
+			height: 100px;
+			background: #1AA160;
+		}
+		#ramp {
+			width: 100px;
+			height: 50px;
+			background: #1452FB;
+		}
+		#spawn {
+			width: 50px;
+			height: 100px;
+			background: rgba(251,228,20,.2);
+		}
+		#greenZone {
+			width: 100px;
+			height: 100px;
+			background: rgba(5,241,68,.2);
+		}
+		#gunGun {
+			width: 70px;
+		 	height: 17px;
+		 	background: url("../img/gun.png");
+		}
+		#gunM4a4 {
+			width: 70px;
+			height: 27px;
+			background: url("../img/m4a4.png");
+		}
+		#gunAwp {
+			width: 115px;
+			height: 27px;
+			background: url("../img/awp.png");
+		}
+		.infopanel {
+			display: flex;
+			flex-direction: column;
+			width: 200px;
+			height: 400px;
+			border: 2px solid black;
+		}
+		.infopanel__title {
+			display: block;
+			width: 100%;
+			text-align: center;
+			margin: 0px;
+			padding-bottom: 10px;
+			border-bottom: 2px solid black;
+		}
+		.infopanel__zone {
+			display: block;
+			width: 100%;
+			height: 200px;
+			margin-top: 10px;
+			text-align: left;
+		}
+		.infopanel__zone-selected {
+			display: block;
+			margin-left: 10px;
+		}
+		.infopanel__zone-selectedObj {
+			display: block;
+			margin-left: 30px;
+		}
+
+
+
+
+
+
+		.View {
+			display: block;
+			width: 1605px;
+			height: 805px;
+			position: relative;
+			margin-left: 70px;
+			border: 2px solid black;
+			overflow: hidden;
+			
+		}
+		#canvas {
+			display: block;
+			border: 2px solid red;
+			position: absolute;
+			top: 0px;
+			left: 0px;
+		}
+
+
+		.infoBox {
+			display: flex;
+			width: 1600px;
+			position: absolute;
+			top: 10px;
+			left: 290px;
+		}
+		.infoBox__mouse {
+			display: block;
+			width: 150px;
+			height: 20px;
+			color: #000;
+		}
+
+		.infoBox__canvCord {
+			display: block;
+			width: 200px;
+			height: 20px;
+			color: #000;
+		}
+
+		.infoBox__mapName {
+			display: block;
+			position: absolute;
+   			top: 30px;
+			font-size: 20px;
+			font-weight: 700;
+		}
+
+
+		.infoBox__scale {
+			display: flex;
+			align-items: center;
+			position: absolute;
+			top: 890px;
+			left: 1100px;
+
+		}
+		.infoBox__scale input {
+			width: 400px;
+			margin-left: 10px;
+		}
+
+
+		.infoBox__canvas {
+			display: none;
+			
+			justify-content: space-between;
+			width: 500px;
+			color: #000;
+			text-align: center;
+		}
+		.infoBox__canvas_size {
+			display: flex;
+			flex-direction: column;
+		}
+		.infoBox__canvas input[type="range"] {
+			width: 300px;
+		}
+		.infoBox__canvas_checkboxes {
+
+		}
+		.infoBox__canvas_checkboxes div{
+			width: 110px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+
+		.infoBox__trajectory {
+			display: none;
+			justify-content: space-between;
+			width: 300px;
+			margin-left: 30px;
+			color: #000;
+		}
+		.infoBox__trajectory input {
+			width: 50px;
+		}
+		.infoBox__trajectory_x div, .infoBox__trajectory_y div{
+			display: flex;
+			width: 120px;
+			justify-content: space-between;
+		}
+		#trajectory_apply {
+			width: 100%;
+			height: 100%;
+		}
+
+		.infoBox__boost {
+			display: none;
+			width: 100px;
+			margin-left: 30px;
+		}
+		#boostJump {
+			width: 60px;
+			height: 22px;
+		}
+
+		.infoBox__portal {
+			display: none;
+			justify-content: space-between;
+			width: 160px;
+			color: #000;
+		}
+		.infoBox__portal_cord input {
+			width: 50px;
+		}
+		.infoBox__portal_cord div{
+			display: flex;
+			width: 120px;
+			justify-content: space-between;
+		}
+		#portal_apply {
+			width: 100%;
+			height: 100%;
+		}
+
+		.infoBox__gun {
+			display: flex;
+			justify-content: space-between;
+			width: 100px;
+			height: 20px;
+			color: #000;
+		}
+		#gunTakes {
+			width: 30px;
+			height: 100%;
+		}
+
+		.infoBox__ramp {
+			display: none;
+			width: 150px;
+			justify-content: space-between;
+		}
+
+		.management {
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+			width: 200px;
+			height: 60px;
+			position: absolute;
+			top: 0px;
+			left: -270px;
+		}
+		.management__save {
+			display: flex;
+		}
+	</style>
+	<section>
+		<div class="tools">
+			<div class="toolbar">
+				<h2 class="toolbar__title">Toolbar</h2>
+				<div class="tool__item" id="plat" draggable="true">
+					Plat
+				</div>
+				<div class="tool__item" id="platMove" draggable="true">
+					PlatMove
+				</div>
+				<div class="tool__item" id="boost" draggable="true">
+					Boost
+				</div>
+				<div class="tool__item" id="acid" draggable="true">
+					Acid
+				</div>
+				<div class="tool__item" id="portal" draggable="true">
+					Portal
+				</div>
+				<div class="tool__item" id="ramp" draggable="true">
+					Ramp
+				</div>
+				<div class="tool__item" id="spawn" draggable="true">
+					Spawn
+				</div>
+				<div class="tool__item" id="greenZone" draggable="true">
+					GreenZone
+				</div>
+				<div class="tool__item" id="gunGun" draggable="true">
+					Gun
+				</div>
+				<div class="tool__item" id="gunM4a4" draggable="true">
+					m4a4
+				</div>
+				<div class="tool__item" id="gunAwp" draggable="true">
+					Awp
+				</div>
+
+			</div>
+			<div class="infopanel">
+				<h2 class="infopanel__title">Infopanel</h2>
+				<div class="infopanel__zone">
+					<p class="infopanel__zone-selected"></p>
+					<p class="infopanel__zone-selectedObj"></p>
+				</div>
+			</div>
+		</div>
+		<div class="View">
+			<canvas id="canvas"></canvas>
+		</div>
+		<div class="infoBox">
+			<div class="management">
+				<button id="setSave">Сохранить файл</button>
+
+				<div class="management__save">
+					<select id="selectMaps">
+						
+					</select>
+					<button id="openMap">Открыть файл</button>
+				</div>
+				
+			</div>
+			<p class="infoBox__mouse"></p>
+			<p class="infoBox__canvCord"></p>
+			<p class="infoBox__mapName"></p>
+			<div class="infoBox__scale">
+				<label id="canvasScaleLable">Canvas Scale: 1</label>
+				<input type="range" min="0.1" max="2" step="0.1" value="1" id="canvasScale">
+			</div>
+			<div class="infoBox__canvas">
+				<div class="infoBox__canvas_size">
+					<div>
+						<label id="canvasWidthLable">Canvas Width: 2000</label>
+						<input type="range" min="500" max="10000" step="100" value="2000" id="canvasWidth">
+					</div>
+					<div>
+						<label id="canvasHeightLable">Canvas Height: 1000</label>
+						<input type="range" min="500" max="10000" step="100" value="1000" id="canvasHeight">
+					</div>
+				</div>
+				<div class="infoBox__canvas_checkboxes">
+					<div>
+						<p>Player model</p>
+						<input type="checkbox" id="checkboxPlayerModel">
+					</div>
+				</div>
+			</div>
+			<div class="infoBox__trajectory">
+				<div class="infoBox__trajectory_x">
+					<div>
+						moveX
+						<input type="number" id="trajectoryMoveX">
+					</div>
+					<div>
+						sppedX:
+						<input type="text" id="trajectorySpeedX">
+					</div>
+					<div>
+						goFromX:
+						<input type="text" id="trajectoryGoFromX">
+					</div>
+					<div>
+						goToX:
+						<input type="text" id="trajectoryGoToX">
+					</div>
+				</div>
+				<div class="infoBox__trajectory_y">
+					<div>
+						moveY
+						<input type="number" id="trajectoryMoveY">
+					</div>
+					<div>
+						sppedY:
+						<input type="text" id="trajectorySpeedY">
+					</div>
+					<div>
+						goFromY:
+						<input type="text" id="trajectoryGoFromY">
+					</div>
+					<div>
+						goToY:
+						<input type="text" id="trajectoryGoToY">
+					</div>
+				</div>
+				<div class="infoBox__trajectory_apply">
+					<button id="trajectory_apply">Apply</button>
+				</div>
+			</div>
+			<div class="infoBox__boost">
+				jump:
+				<input type="text" id="boostJump">
+			</div>
+			<div class="infoBox__portal">
+				<div class="infoBox__portal_cord">
+					<div>
+						portToX:
+						<input type="text" id="portalPortToX">
+					</div>
+					<div>
+						portToY:
+						<input type="text" id="portalPortToY">
+					</div>
+				</div>
+				<div class="infoBox__portal_apply">
+					<button id="portal_apply">Apply</button>
+				</div>
+			</div>
+			<div class="infoBox__ramp">
+				<div class="infoBox__ramp_dir">
+					<div>
+					rampDir: 1:
+						<input type="radio" name="rampDir" value="1" id="rampDir1">
+					</div>
+					<div>
+						rampDir: -1:
+						<input type="radio" name="rampDir" value="-1" id="rampDir-1">
+					</div>
+				</div>
+			</div>
+			<div class="infoBox__gun">
+					Gun takes:
+					<input type="text" id="gunTakes">
+			</div>
+		</div>
+	</section>
+	
+	
+	
+
+	<script type="text/javascript" src="mapEdder.js"></script>
+</body>
+</html>

@@ -64,6 +64,8 @@ var model_box3 = new Image();
 var model_box4 = new Image();
 var model_magma = new Image();
 var model_acid = new Image();
+var model_ramp = new Image();
+var model_ramp_left = new Image();
 
 model_plat.src = "img/models/plat.png";
 model_wall.src = "img/models/wall.png";
@@ -73,6 +75,8 @@ model_box3.src = "img/models/box3.jpg";
 model_box4.src = "img/models/box4.jpg";
 model_magma.src = "img/models/magma.png";
 model_acid.src = "img/models/acid.png";
+model_ramp.src = "img/models/ramp.png";
+model_ramp_left.src = "img/models/ramp_left.png";
 
 //текстуры анимации портала
 var anim_portal1 = new Image();
@@ -194,7 +198,7 @@ var continuousKills = 0;
 var xPos = 800;
 var yPos = 800;
 var persDir = 0;
-var MINyPos = yPos;
+var MINyPos = 5000;
 var dead;
 var spawnX;
 var spawnY;
@@ -210,6 +214,7 @@ var ySlide;
 
 //физические константы
 var moveSpeed = 5;
+var maxMoveSpeed = 19;
 var grav = 9.8;
 var shotSpeed = 8;
 
@@ -235,6 +240,7 @@ var direction = 0;
 var directionVertical = 0;
 var directionKeyDown;
 var jump = 0;
+var jumpDiff = 0;
 var barrierLeft = 0;
 var barrierRight = 0;
 var barrierLeftAll = 0;
@@ -247,8 +253,20 @@ var onPlatformCorrect = 0;
 var underPlatformNum = null;
 var underPlatform = 0;
 var underPlatformAll = 0;
+var onRamp = 0;
 
 var stats = [];
+
+var rooms = [
+	{
+		x: 1200,
+		y: 680,
+		width: 800,
+		height: 450
+	}
+]	
+
+var inRoomID = -1;
 
 var plats = [];
 var tempPlats = [];
@@ -297,7 +315,7 @@ window.onkeydown = function(e) {
 	        key = "D";
 	    }
 	    if ((e.key === "Space" || e.keyCode === 32) && onStay == 1)  {
-	        jump = 22;//jump
+	        jump = 120;//jump 
 	        onStay = 0;
 	        key = "Space";
 	    }
@@ -387,6 +405,21 @@ function gravOn() {
 	yPos += Math.floor(moveSpeed*(grav/10));//down
 }
 
+function jumpOn() {
+	jumpDiff = Math.ceil(jump/7);
+	if (jumpDiff >= maxMoveSpeed) {
+		yPos -= maxMoveSpeed;//up
+		jump -= maxMoveSpeed;
+	}else {
+		yPos -= jumpDiff;//up
+		jump -= jumpDiff;
+	}
+	
+
+	
+	
+}
+
 function camMove() {
 	canv.style.transform = 'scale(1)';
 	xCam = -(xPos-400);
@@ -435,19 +468,20 @@ function gameСycle() {
 		}
 
 		//движение человека вверх или низ
-		if (jump != 0 && underPlatform == 0) {
+		if (jump > 0 && underPlatform == 0) {
 			directionVertical = 1;
-			yPos -= Math.floor(moveSpeed*(jump/10));//up
-			jump --;
+			jumpOn()
 			grav = 9.8;
+			
 			if (MINyPos > yPos) {
-				MINyPos = yPos+100;
+				MINyPos = yPos;
 			}
 		}else if (onStay == 0){
 			gravOn();
 			jump = 0;
 			directionVertical = 2;
 			persFrameVertical = 1;
+			onPlatformCorrect = 0;
 		}
 		if (yPos == canv.height - pep.height) {
 			directionVertical = 0;
@@ -483,6 +517,7 @@ function gameСycle() {
 		underPlatformAll = 0;
 		barrierLeftAll = 0;
 		barrierRightAll = 0;
+		onRamp = 0;
 	} else {
 		camCenter();
 	}
@@ -492,31 +527,30 @@ function gameСycle() {
 		if (plats[i] === null || plats[i].model == "greenZone") {
 			continue;
 		}
-
 		if (plats[i].unStatic == 1) {
 			//движение вместе с платформой, если мы на ней
 			if (onPlatformNum == i && plats[i].moveObj.moveX != 0) {
 				if (plats[i].moveObj.moveX == 1 && barrierRightAll == 0) {
-					xPos += plats[i].moveObj.speed+0.06;
+					xPos += plats[i].moveObj.speedX+0.06;
 
 				}
 				if (plats[i].moveObj.moveX == -1 && barrierLeftAll == 0) {
-					xPos -= plats[i].moveObj.speed+0.06;
+					xPos -= plats[i].moveObj.speedX+0.06;
 				}
 			}
 			if (onPlatformNum == i && plats[i].moveObj.moveY != 0) {
 				if (plats[i].moveObj.moveY == 1) {
-					yPos += plats[i].moveObj.speed+0.06;
+					yPos += plats[i].moveObj.speedY+0.06;
 				}
 				if (plats[i].moveObj.moveY == -1 && underPlatformAll == 0) {
-					yPos -= plats[i].moveObj.speed+0.06;
+					yPos -= plats[i].moveObj.speedY+0.06;
 				}
 			}
 		}
 
-		var g = 10;
+		var g = 1;
 		var j = 1;
-		while(g != pep.width-10) {
+		while(g != pep.width) {
 			g++;
 			//проверка на нахождение на платформе
 			if (
@@ -529,7 +563,7 @@ function gameСycle() {
 				)
 				&& 	
 				(
-					((yPos + pep.height+moveSpeed) > plats[i].y) && ((yPos+pep.height+moveSpeed) < (plats[i].y+plats[i].height))
+					((yPos + pep.height+2) > plats[i].y) && ((yPos+pep.height+2) < (plats[i].y+plats[i].height))
 				)
 			) {
 				
@@ -540,16 +574,49 @@ function gameСycle() {
 						var soundPortal = new Audio("sounds/portal.mp3");
 						soundPortal.autoplay = true;
 					}else {
+						if (plats[i].model == "ramp") {
+							var rampRate = plats[i].height/plats[i].width;
+							if(plats[i].rampDir == 1){
+								var rampDist = xPos+25-plats[i].x;
+								if (rampDist>0 && rampDist<plats[i].width) {
+									onRamp = 1;
+									if(yPos+pep.height>=(plats[i].y+plats[i].height-10)-(rampDist*rampRate)) {
+										onPlatformAll = 1;
+										onPlatformNum = i;
+										if (rampDist < 15) {
+											yPos = (plats[i].y+plats[i].height-7)-(rampDist*rampRate)-pep.height;
+										}else {
+											yPos = (plats[i].y+plats[i].height-2)-(rampDist*rampRate)-pep.height;
+										}
+									}
+								}
+							}else {
+								var rampDist = plats[i].x+plats[i].width-xPos-25;
+								if (rampDist>0 && rampDist<plats[i].width) {
+									onRamp = 1;
+									if(yPos+pep.height>=(plats[i].y+plats[i].height-10)-(rampDist*rampRate)) {
+										onPlatformAll = 1;
+										onPlatformNum = i;
+										if (rampDist < 15) {
+											yPos = (plats[i].y+plats[i].height-7)-(rampDist*rampRate)-pep.height;
+										}else {
+											yPos = (plats[i].y+plats[i].height-2)-(rampDist*rampRate)-pep.height;
+										}
+									}
+								}
+							}
+							break;
+						}
 						onPlatformAll = 1;
 						onPlatformNum = i;
 						if (onPlatformCorrect == 0) {
 							onPlatformCorrect = 1;
-							yPos = plats[i].y-pep.height-moveSpeed-1;
+							yPos = plats[i].y-pep.height;
 							sendSound("fall");
 						}
 						//проверка на буст
 						if(plats[i].toBoost == 1) {
-							jump = 41;//jump
+							jump = plats[i].jump;//jump
 					        onStay = 0;
 					        sendAnimation("boost",i)
 					        break;
@@ -571,6 +638,13 @@ function gameСycle() {
 					(yPos > plats[i].y) && (yPos < (plats[i].y+plats[i].height))
 				)
 			) {
+				if (plats[i].model == "ramp") {
+					if(onRamp == 0) {
+						underPlatformAll = 1;
+						underPlatformNum = i;
+					}
+					break;
+				}
 				underPlatformAll = 1;
 				underPlatformNum = i;
 			}
@@ -594,9 +668,19 @@ function gameСycle() {
 						var soundPortal = new Audio("sounds/portal.mp3");
 						soundPortal.autoplay = true;
 					}else {
+						if (plats[i].model == "ramp") {
+							if(plats[i].rampDir == 1 && onRamp == 0) {
+								barrierLeftAll = 1;
+							}else {
+								if ((yPos<plats[i].y+plats[i].height)&&(plats[i].y+plats[i].height<yPos+pep.height)) {
+									barrierLeftAll = 1;
+								}
+							}
+							break;
+						}
 						barrierLeftAll = 1;
 						if (plats[i].unStatic == 1 && plats[i].moveObj.move != 0 && barrierRightAll == 0) {
-							xPos += plats[i].moveObj.speed;
+							xPos += plats[i].moveObj.speedX;
 						}
 					}
 				}
@@ -618,9 +702,19 @@ function gameСycle() {
 						var soundPortal = new Audio("sounds/portal.mp3");
 						soundPortal.autoplay = true;
 					} else {
+						if (plats[i].model == "ramp") {
+							if(plats[i].rampDir == -1 && onRamp == 0) {
+								barrierRightAll = 1;
+							}else {
+								if ((yPos<plats[i].y+plats[i].height)&&(plats[i].y+plats[i].height<yPos+pep.height)) {
+									barrierRightAll = 1;
+								}
+							}
+							break;
+						}
 						barrierRightAll = 1;
 						if (plats[i].unStatic == 1 && plats[i].moveObj.move != 0 && barrierLeftAll == 0) {
-							xPos -= plats[i].moveObj.speed;
+							xPos -= plats[i].moveObj.speedX;
 						}
 					}
 				}
@@ -633,20 +727,20 @@ function gameСycle() {
 			if (plats[i].unStatic == 1 && underPlatformNum == i) {
 				xPos += 1;
 			}
-			if(onPlatformAll == 1) {
+			if(onPlatformAll == 1 && barrierRightAll != 1 && onRamp == 0) {
 				xPos += 1;
 			}
 		}else {
 			underPlatform = 0;
 		}
 		//платформа с лева
-		if (barrierLeftAll == 1) {
+		if (barrierLeftAll == 1 && onRamp == 0) {
 			barrierLeft = 1;
 		}else {
 			barrierLeft = 0;
 		}
 		//платформа с права
-		if (barrierRightAll == 1) {
+		if (barrierRightAll == 1 && onRamp == 0) {
 			barrierRight = 1;
 		}else {
 			barrierRight = 0;
@@ -690,7 +784,7 @@ function draw() {
 
 		if (devMode == 1) {			
 			if(plats[i].toDie == 1) {
-				ctx.fillStyle = "#E76224";
+				ctx.fillStyle = "#00FF00";
 			}
 			else if(plats[i].toPort == 1) {
 				ctx.fillStyle = "#1AA160";
@@ -699,6 +793,21 @@ function draw() {
 				ctx.fillStyle = "#BA55D3";
 			}else if(plats[i].model == "greenZone") {
 				ctx.fillStyle = "rgba(5,241,68,.2)";
+			}else if(plats[i].model == "ramp") {
+				ctx.beginPath();
+				ctx.moveTo(plats[i].x,plats[i].y+plats[i].height-10);
+				ctx.fillStyle = "#1452FB";
+				if(plats[i].rampDir == 1){
+					ctx.lineTo(plats[i].x+plats[i].width,plats[i].y);
+					ctx.lineTo(plats[i].x+plats[i].width,plats[i].y+plats[i].height-10);
+					ctx.fill();	
+				}else {
+					ctx.lineTo(plats[i].x,plats[i].y);
+					ctx.lineTo(plats[i].x+plats[i].width,plats[i].y+plats[i].height-10);
+					ctx.fill();
+				}
+				ctx.fillStyle = "rgba(255,82,157,.2)";
+				ctx.fillRect(plats[i].x,plats[i].y,plats[i].width,plats[i].height);
 			}else {
 				ctx.fillStyle = "#416D71";	
 			}
@@ -747,6 +856,13 @@ function draw() {
 					break;
 				case "box4":
 					ctx.drawImage(model_box4,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
+					break;
+				case "ramp":
+					if(plats[i].rampDir == 1){
+						ctx.drawImage(model_ramp,plats[i].x,plats[i].y,plats[i].width,plats[i].height-10);
+					}else {
+						ctx.drawImage(model_ramp_left,plats[i].x,plats[i].y,plats[i].width,plats[i].height-10);
+					}
 					break;
 				case "magma":
 					ctx.drawImage(model_magma,plats[i].x,plats[i].y,plats[i].width,plats[i].height)
@@ -1394,11 +1510,6 @@ function draw() {
 			    	ctx.restore();
 				}
 		}
-		//отрисовка ника игрока
-		ctx.fillStyle = "#157E14";
-		ctx.font = "10px PressStart2P";
-		var tmpNickX = nick.length*0.9
-		ctx.fillText(nick, xPos-tmpNickX, yPos-10);
 		//отрисовка оружия у игрока
 		if (takeWeapon != 0) {
 			if (persFrame == 7 ) {
@@ -1538,6 +1649,58 @@ function draw() {
 	if (reload == 1) {
 		ctx.drawImage(reloadImg,xPos+5,yPos-45);
 	}
+	
+	// inRoomID = -1;
+	// for (var r in rooms) {
+	// 	if (
+	// 		((rooms[r].x<xPos+25)&&(xPos+25<rooms[r].x+rooms[r].width))
+	// 		&&
+	// 		((rooms[r].y<yPos+25)&&(yPos+25<rooms[r].y+rooms[r].height))
+	// 	) {
+	// 		inRoomID = r;
+
+	// 		ctx.fillStyle = "#000";
+	// 		ctx.beginPath();
+	// 		ctx.moveTo(0,0);
+	// 		ctx.lineTo(rooms[r].x,rooms[r].y);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y);
+	// 		ctx.lineTo(canv.width,0);
+	// 		ctx.fill();
+
+	// 		ctx.beginPath();
+	// 		ctx.moveTo(canv.width,0);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y+rooms[r].height);
+	// 		ctx.lineTo(canv.width,canv.height);
+	// 		ctx.fill();
+
+	// 		ctx.beginPath();
+	// 		ctx.moveTo(canv.width,canv.height);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y+rooms[r].height);
+	// 		ctx.lineTo(rooms[r].x,rooms[r].y+rooms[r].height);
+	// 		ctx.lineTo(0,canv.height);
+	// 		ctx.fill();
+
+	// 		ctx.beginPath();
+	// 		ctx.moveTo(0,canv.height);
+	// 		ctx.lineTo(rooms[r].x,rooms[r].y+rooms[r].height);
+	// 		ctx.lineTo(rooms[r].x,rooms[r].y);
+	// 		ctx.lineTo(0,0);
+	// 		ctx.fill();
+	// 	}
+	// 	if (inRoomID == r) {
+	// 		continue;
+	// 	}else {
+	// 		ctx.fillStyle = "#000";
+	// 		ctx.beginPath();
+	// 		ctx.moveTo(rooms[r].x,rooms[r].y);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y);
+	// 		ctx.lineTo(rooms[r].x+rooms[r].width,rooms[r].y+rooms[r].height);
+	// 		ctx.lineTo(rooms[r].x,rooms[r].y+rooms[r].height)
+	// 		ctx.fill();
+	// 	}
+
+	// }
 
 	
 	if (devMode == 1) {
@@ -1555,9 +1718,16 @@ function draw() {
 		ctx.fillText("barrierRightAll: " + barrierRightAll, xPos, yPos-90);
 		ctx.fillText("minY+100: " + MINyPos, xPos, yPos-100);
 		ctx.fillText("grav: " + (Math.floor(moveSpeed*(grav/13))), xPos, yPos-110);
+		ctx.fillText("onRamp: " + onRamp, xPos, yPos-120);
 		ctx.fillStyle = "#4A8AF4";
 		ctx.font = "40px Verdana";
 		ctx.fillText("devMode", xPos-350, yPos-150);
+	}else {
+		//отрисовка ника игрока
+		ctx.fillStyle = "#157E14";
+		ctx.font = "10px PressStart2P";
+		var tmpNickX = nick.length*0.9
+		ctx.fillText(nick, xPos-tmpNickX, yPos-10);
 	}
 
 	if(dead == 1) {
@@ -1668,8 +1838,7 @@ function WSconnect() {
 			inpNick.oninput = ()=>{
 				if(inpNick.value != "") {
 					inpBut.style.display = 'flex';
-					enterNickForm.onsubmit = function(e){
-						e.preventDefault();
+					inpBut.onclick = ()=>{
 						nick = inpNick.value;
 						enterNickForm.style.display = 'none';
 						gameEngineOperation = 1;
@@ -1708,6 +1877,8 @@ function WSconnect() {
 			userID = res.id;
 			roundTime = res.roundTime;
 			takeWeapon = res.takeWeapon;
+			canv.width = res.canv.width;
+			canv.height = res.canv.height;
 			console.log("UserID: "+userID);
 			gameСycle();
 			draw();
@@ -1966,6 +2137,7 @@ window.onload = function () {
 	},180)
 	setTimeout(()=>{
 		preloader.style.opacity = "0";
+		preloader.style.display = 'none';
 	},200)
     
 }

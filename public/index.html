@@ -103,7 +103,7 @@
 
 		.enterNick {
 			display: flex;
-			justify-content: center;
+			justify-content: space-around;
 			align-items: center;
 			position: absolute;
 			top: 0px;
@@ -113,6 +113,9 @@
 			background: rgba(74,138,244,0.5);
 			backdrop-filter: blur(10px);
 			z-index: 1000;
+		}
+		.controlButtons {
+
 		}
 		.enterNick_text {
 			display: block;
@@ -369,10 +372,34 @@
 				</div>
 				<div id="serverNotifications"></div>
 			</div>
-			<form class="enterNick">
-				<input type="text" class="enterNick_text" autofocus maxlength="12">
-				<button class="enterNick_submit">Go</button>
-			</form>
+			<div class="enterNick">
+				<div class="controlButtons">
+					<ul>
+						<li>
+							<p>
+								A - left run
+							</p>
+						</li>
+						<li>
+							<p>
+								D - right run
+							</p>
+						</li>
+						<li>
+							<p>
+								Space - jump
+							</p>
+						</li>
+						<li>
+							<p>
+								Enter - fire
+							</p>
+						</li>
+					</ul>
+				</div>
+				<input type="text" class="enterNick_text" placeholder="Nickname" autofocus maxlength="12">
+				<button type="submit" class="enterNick_submit">Go</button>
+			</div>
 		</div>
 		<audio class="wildbeats" autoplay="autoplay" loop>
 			<source src="sounds/wildbeats.mp3" type="audio/mpeg">
